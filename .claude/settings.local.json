@@ -6,7 +6,9 @@
       "Cmd(*)",
       "Python(*)",
       "Bash(cd \"C:\\\\Users\\\\toddw\\\\OneDrive\\\\Dev_Projects\\\\md-editors\" && pwsh -Command \"git init\")",
-      "Bash(cd \"C:\\\\Users\\\\toddw\\\\OneDrive\\\\Dev_Projects\\\\md-editors\" && pwsh -Command \"git add .\")"
+      "Bash(cd \"C:\\\\Users\\\\toddw\\\\OneDrive\\\\Dev_Projects\\\\md-editors\" && pwsh -Command \"git add .\")",
+      "Bash(cd \"C:\\\\Users\\\\toddw\\\\OneDrive\\\\Dev_Projects\\\\md-editors\" && pwsh -Command \"git commit -m 'Initial commit: Markdown editors collection with 4 AI-generated editors'\")",
+      "Bash(cd \"C:\\\\Users\\\\toddw\\\\OneDrive\\\\Dev_Projects\\\\md-editors\" && pwsh -Command \"gh repo create md-editors --public --source=. --remote=origin --push\")"
     ]
   }
 }

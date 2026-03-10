@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(*)",
+      "PowerShell(*)",
+      "Cmd(*)",
+      "Python(*)",
+      "Bash(cd \"C:\\\\Users\\\\toddw\\\\OneDrive\\\\Dev_Projects\\\\md-editors\" && pwsh -Command \"git init\")",
+      "Bash(cd \"C:\\\\Users\\\\toddw\\\\OneDrive\\\\Dev_Projects\\\\md-editors\" && pwsh -Command \"git add .\")"
+    ]
+  }
+}

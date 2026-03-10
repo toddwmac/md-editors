@@ -1,0 +1,2056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UniversalEdit Pro v2</title>
+<style>
+:root {
+  --bg: #080c14;
+  --bg2: #0d1220;
+  --bg3: #111827;
+  --bg4: #1a2035;
+  --bg5: #1e2540;
+  --card: rgba(255,255,255,0.04);
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.14);
+  --text: #e8edf8;
+  --text2: #9aabc7;
+  --text3: #5a6a85;
+  --accent: #4f8ef7;
+  --accent2: #7c6fef;
+  --accent3: #06c4a8;
+  --accentr: #f25b5b;
+  --accenty: #f0b429;
+  --glow: rgba(79,142,247,0.18);
+  --r: 10px;
+  --r2: 7px;
+  --r3: 5px;
+  --trans: all 0.18s ease;
+  --font-ui: 'Inter','Segoe UI',system-ui,sans-serif;
+  --font-mono: 'Cascadia Code','Fira Code','Consolas',monospace;
+  --header-h: 56px;
+  --toolbar-h: 48px;
+  --status-h: 27px;
+  --tab-h: 36px;
+}
+.light {
+  --bg:#f0f4fc;--bg2:#e8eef8;--bg3:#dde6f5;--bg4:#cdd8ee;--bg5:#bfcfe8;
+  --card:rgba(0,0,0,0.03);--border:rgba(0,0,0,0.09);--border2:rgba(0,0,0,0.16);
+  --text:#0f1a2e;--text2:#3a4e6e;--text3:#7a8fa8;
+  --accent:#2563eb;--accent2:#6d28d9;--accent3:#0d9488;--accentr:#dc2626;--accenty:#d97706;
+  --glow:rgba(37,99,235,0.12);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;font-family:var(--font-ui);background:var(--bg);color:var(--text);font-size:14px}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:10px}
+::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+#app{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+
+/* HEADER */
+#header{height:var(--header-h);flex-shrink:0;display:flex;align-items:center;padding:0 14px;gap:10px;background:var(--bg2);border-bottom:1px solid var(--border);z-index:50}
+.logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:15px;letter-spacing:-.3px;white-space:nowrap}
+.logo-icon{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 0 12px var(--glow)}
+.logo em{color:var(--accent);font-style:normal}
+.hdr-spacer{flex:1}
+.hdr-group{display:flex;align-items:center;gap:5px;flex-wrap:nowrap}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border:1px solid var(--border);border-radius:var(--r3);background:var(--card);color:var(--text2);font-size:12.5px;font-family:var(--font-ui);font-weight:500;cursor:pointer;transition:var(--trans);white-space:nowrap;outline:none;user-select:none}
+.btn:hover{background:var(--bg5);border-color:var(--border2);color:var(--text)}
+.btn.active{background:rgba(79,142,247,0.15);border-color:var(--accent);color:var(--accent)}
+.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));border-color:transparent;color:#fff;font-weight:600;box-shadow:0 2px 10px var(--glow)}
+.btn.primary:hover{opacity:.9;transform:translateY(-1px)}
+.btn.success{color:var(--accent3);border-color:rgba(6,196,168,.3)}
+.btn.success:hover{background:rgba(6,196,168,.12)}
+.btn.danger{color:var(--accentr);border-color:rgba(242,91,91,.25)}
+.btn.danger:hover{background:rgba(242,91,91,.1)}
+.btn.warn{color:var(--accenty);border-color:rgba(240,180,41,.25)}
+.btn.warn:hover{background:rgba(240,180,41,.1)}
+.btn.sm{padding:3px 7px;font-size:11.5px}
+.btn.icon{padding:5px 7px}
+.sep{width:1px;height:20px;background:var(--border2);flex-shrink:0;margin:0 1px}
+.btn-group{display:flex}
+.btn-group .btn:first-child:not(:last-child){border-radius:var(--r3) 0 0 var(--r3)}
+.btn-group .btn:last-child:not(:first-child){border-radius:0 var(--r3) var(--r3) 0}
+.btn-group .btn:not(:first-child):not(:last-child){border-radius:0}
+.btn-group .btn:not(:last-child){border-right:none}
+
+/* TOOLBAR */
+#toolbar{height:var(--toolbar-h);flex-shrink:0;display:flex;align-items:center;padding:0 8px;gap:3px;background:var(--bg3);border-bottom:1px solid var(--border);overflow-x:auto;overflow-y:hidden}
+#toolbar::-webkit-scrollbar{height:3px}
+select.sel{padding:4px 7px;border:1px solid var(--border);border-radius:var(--r3);background:var(--bg4);color:var(--text);font-size:12px;font-family:var(--font-ui);cursor:pointer;outline:none;transition:var(--trans)}
+select.sel:hover,select.sel:focus{border-color:var(--accent)}
+
+/* TABS */
+#tabs-bar{height:var(--tab-h);flex-shrink:0;display:flex;align-items:flex-end;padding:0 10px;gap:2px;background:var(--bg2);border-bottom:1px solid var(--border);overflow-x:auto}
+#tabs-bar::-webkit-scrollbar{height:2px}
+.tab{display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:var(--r2) var(--r2) 0 0;border:1px solid transparent;border-bottom:none;font-size:12.5px;cursor:pointer;color:var(--text3);transition:var(--trans);max-width:150px;background:transparent;white-space:nowrap;user-select:none}
+.tab:hover{color:var(--text);background:var(--bg3)}
+.tab.active{color:var(--text);background:var(--bg);border-color:var(--border);font-weight:600}
+.tab-close{opacity:0;font-size:11px;color:var(--text3);border-radius:3px;padding:0 2px;transition:var(--trans);cursor:pointer;line-height:1}
+.tab:hover .tab-close,.tab.active .tab-close{opacity:1}
+.tab-close:hover{color:var(--accentr)!important;background:rgba(242,91,91,.15)}
+.tab-dirty::after{content:'●';font-size:7px;color:var(--accenty);margin-left:2px;vertical-align:middle}
+.tab-new{padding:4px 9px;font-size:15px;color:var(--text3);cursor:pointer;border-radius:var(--r2);transition:var(--trans);line-height:1;user-select:none;align-self:center;margin-left:2px}
+.tab-new:hover{color:var(--accent);background:var(--card)}
+
+/* WORKSPACE */
+#workspace{flex:1;display:flex;overflow:hidden;position:relative}
+.panel{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:180px}
+.panel-hdr{display:flex;align-items:center;gap:6px;padding:5px 10px;background:var(--bg3);border-bottom:1px solid var(--border);flex-shrink:0}
+.panel-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);flex:1}
+.panel-badge{font-size:10px;padding:1px 6px;border-radius:10px;background:rgba(79,142,247,.18);color:var(--accent);font-weight:700}
+
+/* DRAG DIVIDER */
+.drag-divider{width:5px;flex-shrink:0;background:var(--border);cursor:col-resize;transition:background .2s;position:relative}
+.drag-divider:hover,.drag-divider.dragging{background:var(--accent)}
+
+/* EDITOR */
+#editor-wrap{flex:1;position:relative;overflow:hidden;display:flex;flex-direction:column}
+#find-replace{display:none;position:absolute;top:6px;right:10px;z-index:30;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:8px 10px;gap:5px;align-items:center;flex-wrap:wrap;box-shadow:0 8px 28px rgba(0,0,0,.4);max-width:460px}
+#find-replace.open{display:flex}
+.fr-input{background:var(--bg4);border:1px solid var(--border2);color:var(--text);border-radius:var(--r3);padding:4px 8px;font-size:12.5px;font-family:var(--font-ui);outline:none;width:150px;transition:var(--trans)}
+.fr-input:focus{border-color:var(--accent)}
+.fr-count{font-size:11px;color:var(--text3);min-width:52px;text-align:center}
+#editor{flex:1;width:100%;border:none;outline:none;resize:none;background:var(--bg);color:var(--text);font-family:var(--font-mono);font-size:14px;line-height:1.72;padding:20px 24px;tab-size:2;overflow-y:auto}
+#editor.wrap-on{white-space:pre-wrap;word-wrap:break-word}
+#editor.wrap-off{white-space:pre;overflow-x:auto}
+#editor::placeholder{color:var(--text3)}
+
+/* PREVIEW */
+#preview-panel{flex:1;display:flex;flex-direction:column;overflow:hidden}
+#preview-wrap{flex:1;overflow-y:auto;padding:22px 30px}
+#preview{max-width:840px;margin:0 auto;line-height:1.78;word-wrap:break-word}
+#preview h1,#preview h2,#preview h3,#preview h4,#preview h5,#preview h6{color:var(--text);font-weight:700;line-height:1.3;margin:1.4em 0 .5em}
+#preview h1{font-size:2em;border-bottom:2px solid var(--accent);padding-bottom:.3em}
+#preview h2{font-size:1.5em;border-bottom:1px solid var(--border2);padding-bottom:.28em}
+#preview h3{font-size:1.22em;color:var(--accent2)}
+#preview h4{font-size:1.05em;color:var(--accent3)}
+#preview p{margin:.75em 0;color:var(--text2)}
+#preview a{color:var(--accent);text-decoration:none;border-bottom:1px solid rgba(79,142,247,.3)}
+#preview a:hover{border-color:var(--accent)}
+#preview strong{color:var(--text);font-weight:700}
+#preview em{color:var(--accent2);font-style:italic}
+#preview del{color:var(--text3);text-decoration:line-through}
+#preview mark{background:rgba(240,180,41,.3);color:var(--text);padding:1px 4px;border-radius:3px}
+#preview code{font-family:var(--font-mono);font-size:.87em;background:var(--bg4);color:var(--accent3);padding:.15em .45em;border-radius:4px;border:1px solid var(--border)}
+#preview pre{background:var(--bg2);border:1px solid var(--border2);border-left:3px solid var(--accent);border-radius:var(--r);padding:14px 18px;overflow-x:auto;margin:1em 0;position:relative}
+#preview pre code{background:transparent;border:none;padding:0;font-size:.9em;color:var(--text)}
+#preview blockquote{border-left:3px solid var(--accent2);background:rgba(124,111,239,.07);margin:1em 0;padding:11px 16px;border-radius:0 var(--r2) var(--r2) 0;color:var(--text2);font-style:italic}
+#preview ul,#preview ol{padding-left:22px;margin:.75em 0;color:var(--text2)}
+#preview li{margin:.3em 0;line-height:1.7}
+#preview table{width:100%;border-collapse:collapse;margin:.9em 0;font-size:.92em}
+#preview th{background:var(--bg4);color:var(--accent);padding:8px 12px;text-align:left;border:1px solid var(--border2);font-weight:700}
+#preview td{padding:7px 12px;border:1px solid var(--border);color:var(--text2)}
+#preview tr:nth-child(even) td{background:rgba(255,255,255,.02)}
+#preview img{max-width:100%;border-radius:var(--r);margin:.7em 0;box-shadow:0 4px 18px rgba(0,0,0,.3)}
+#preview hr{border:none;border-top:1px solid var(--border2);margin:1.8em 0}
+#preview input[type=checkbox]{accent-color:var(--accent);margin-right:5px}
+.code-copy-btn{position:absolute;top:7px;right:7px;opacity:0;transition:var(--trans)}
+#preview pre:hover .code-copy-btn{opacity:1}
+
+/* SLOTS PANEL */
+#slots-panel{width:0;overflow:hidden;background:var(--bg2);border-left:1px solid var(--border);transition:width .25s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;flex-shrink:0}
+#slots-panel.open{width:255px}
+.side-inner{min-width:255px;flex:1;display:flex;flex-direction:column;overflow:hidden}
+.side-hdr{padding:9px 11px 7px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px;flex-shrink:0}
+.side-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);flex:1}
+.side-body{flex:1;overflow-y:auto;padding:7px}
+.slot-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);padding:8px 10px;margin-bottom:5px;cursor:pointer;transition:var(--trans);position:relative}
+.slot-card:hover{border-color:var(--accent);background:var(--bg4)}
+.slot-title{font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px}
+.slot-preview{font-size:11px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.slot-meta{font-size:10.5px;color:var(--text3);margin-top:3px}
+.slot-acts{position:absolute;top:5px;right:5px;display:none;gap:2px}
+.slot-card:hover .slot-acts{display:flex}
+
+/* HISTORY PANEL */
+#history-panel{width:0;overflow:hidden;background:var(--bg2);border-left:1px solid var(--border);transition:width .25s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;flex-shrink:0}
+#history-panel.open{width:235px}
+.hist-item{padding:7px 10px;border-radius:var(--r3);cursor:pointer;border:1px solid transparent;transition:var(--trans);margin-bottom:3px;font-size:12px}
+.hist-item:hover{background:var(--bg4);border-color:var(--border)}
+.hist-time{font-size:10.5px;color:var(--text3);margin-bottom:2px}
+.hist-preview{color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* STATUS BAR */
+#status-bar{height:var(--status-h);flex-shrink:0;display:flex;align-items:center;padding:0 12px;gap:16px;background:var(--bg2);border-top:1px solid var(--border);font-size:11.5px;color:var(--text3);overflow:hidden}
+.sb-item{display:flex;align-items:center;gap:4px;white-space:nowrap}
+.sb-dot{width:5px;height:5px;border-radius:50%;background:var(--accent3);animation:pulse 2.5s infinite;flex-shrink:0}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.sb-sep{width:1px;height:13px;background:var(--border2)}
+.sb-right{margin-left:auto;display:flex;gap:16px;align-items:center}
+
+/* TOAST */
+#toast-host{position:fixed;bottom:36px;right:16px;z-index:999;display:flex;flex-direction:column;gap:6px;pointer-events:none}
+.toast{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r2);padding:8px 14px;font-size:12.5px;color:var(--text);box-shadow:0 6px 24px rgba(0,0,0,.45);animation:tIn .2s ease;display:flex;align-items:center;gap:7px;min-width:190px;max-width:320px}
+.toast.ok{border-left:3px solid var(--accent3)}
+.toast.err{border-left:3px solid var(--accentr)}
+.toast.info{border-left:3px solid var(--accent)}
+.toast.warn{border-left:3px solid var(--accenty)}
+@keyframes tIn{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:translateX(0)}}
+
+/* MODAL */
+#modal-overlay{position:fixed;inset:0;z-index:800;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.65);backdrop-filter:blur(5px)}
+#modal-overlay.open{display:flex}
+.modal-box{background:var(--bg3);border:1px solid var(--border2);border-radius:13px;padding:26px 28px;width:min(500px,94vw);box-shadow:0 18px 55px rgba(0,0,0,.55);animation:mIn .2s ease}
+@keyframes mIn{from{opacity:0;transform:scale(.94) translateY(-12px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal-title{font-size:15px;font-weight:700;margin-bottom:7px}
+.modal-body{color:var(--text2);font-size:13px;line-height:1.7;margin-bottom:20px}
+.modal-footer{display:flex;gap:7px;justify-content:flex-end}
+.modal-input{width:100%;background:var(--bg4);border:1px solid var(--border2);color:var(--text);border-radius:var(--r3);padding:7px 10px;font-size:13px;font-family:var(--font-ui);outline:none;margin-bottom:10px;transition:var(--trans)}
+.modal-input:focus{border-color:var(--accent)}
+.modal-label{font-size:12px;color:var(--text2);margin-bottom:4px;display:block;font-weight:600}
+
+/* DRAG OVERLAY */
+#drag-overlay{display:none;position:fixed;inset:0;z-index:700;background:rgba(8,12,20,.82);backdrop-filter:blur(6px);align-items:center;justify-content:center}
+#drag-overlay.open{display:flex}
+.drag-box{border:2px dashed var(--accent);border-radius:14px;padding:36px 55px;text-align:center;color:var(--text2)}
+.drag-box h2{font-size:19px;color:var(--text);margin-bottom:7px}
+
+/* PRINT */
+@media print{
+  #header,#toolbar,#tabs-bar,#status-bar,#editor-panel,.drag-divider,#slots-panel,#history-panel{display:none!important}
+  #workspace{display:block}
+  #preview-panel{height:auto;overflow:visible}
+  #preview-wrap{overflow:visible;padding:0}
+  #preview{max-width:none;color:#000}
+  #preview pre{background:#f5f5f5;color:#333;border:1px solid #ddd}
+  #preview code{background:#f0f0f0;color:#333}
+  body{background:#fff;color:#000}
+}
+@media(max-width:680px){
+  #preview-panel{display:none}
+  .drag-divider{display:none}
+  #toolbar{gap:2px}
+  .btn{padding:4px 7px;font-size:12px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- HEADER -->
+<div id="header">
+  <div class="logo">
+    <div class="logo-icon">✦</div>
+    Universal<em>Edit</em>
+    <span style="color:var(--text3);font-weight:400;font-size:11px;margin-left:1px">Pro</span>
+  </div>
+  <div class="hdr-spacer"></div>
+  <div class="hdr-group">
+    <button class="btn primary" id="btn-copy-rich" title="Copy as Rich Text — pastes formatted into Word, Email, Docs">📋 Copy Rich</button>
+    <button class="btn success" id="btn-copy-html" title="Copy rendered HTML to clipboard">⟨/⟩ HTML</button>
+    <button class="btn" id="btn-copy-md" title="Copy raw Markdown">↓ MD</button>
+    <button class="btn" id="btn-copy-plain" title="Copy as stripped plain text">Aa Plain</button>
+    <div class="sep"></div>
+    <button class="btn" id="btn-import" title="Import file">📂 Import</button>
+    <button class="btn" id="btn-export-md" title="Export as .md">💾 .md</button>
+    <button class="btn" id="btn-export-html" title="Export as .html">💾 .html</button>
+    <button class="btn" id="btn-export-txt" title="Export as .txt">💾 .txt</button>
+    <div class="sep"></div>
+    <button class="btn icon" id="btn-theme" title="Toggle theme">🌗</button>
+    <button class="btn icon" id="btn-shortcuts" title="Keyboard shortcuts">⌨</button>
+  </div>
+</div>
+
+<!-- TOOLBAR -->
+<div id="toolbar">
+  <div class="btn-group">
+    <button class="btn icon" data-wrap="**" title="Bold">𝐁</button>
+    <button class="btn icon" data-wrap="*" title="Italic">𝘐</button>
+    <button class="btn icon" data-wrap="~~" title="Strikethrough">S̶</button>
+    <button class="btn icon" data-wrap="`" title="Inline code">⌨</button>
+    <button class="btn icon" data-wrap="==" title="Highlight">▓</button>
+    <button class="btn icon" data-wrap="***" title="Bold Italic">𝑩𝑰</button>
+  </div>
+  <div class="sep"></div>
+  <div class="btn-group">
+    <button class="btn sm" data-prefix="# " title="Heading 1">H1</button>
+    <button class="btn sm" data-prefix="## " title="Heading 2">H2</button>
+    <button class="btn sm" data-prefix="### " title="Heading 3">H3</button>
+    <button class="btn sm" data-prefix="#### " title="Heading 4">H4</button>
+  </div>
+  <div class="sep"></div>
+  <button class="btn" data-prefix="- " title="Bullet list">• List</button>
+  <button class="btn" data-prefix="1. " title="Ordered list">1. List</button>
+  <button class="btn" data-prefix="- [ ] " title="Task list">☐ Task</button>
+  <button class="btn" data-prefix="> " title="Blockquote">❝ Quote</button>
+  <div class="sep"></div>
+  <button class="btn" id="btn-ins-link" title="Insert link (Ctrl+K)">🔗 Link</button>
+  <button class="btn" id="btn-ins-img" title="Insert image">🖼 Image</button>
+  <button class="btn" id="btn-ins-table" title="Insert table">⊞ Table</button>
+  <button class="btn" id="btn-ins-code" title="Code block">{ } Block</button>
+  <button class="btn" id="btn-ins-hr" title="Horizontal rule">─ Rule</button>
+  <div class="sep"></div>
+  <button class="btn" id="btn-find" title="Find & Replace (Ctrl+F)">🔍 Find</button>
+  <select class="sel" id="sel-transform">
+    <option value="">⚙ Transform…</option>
+    <option value="upper">UPPERCASE</option>
+    <option value="lower">lowercase</option>
+    <option value="title">Title Case</option>
+    <option value="sentence">Sentence case</option>
+    <option value="trim">Trim Whitespace</option>
+    <option value="strip-md">Strip MD Symbols</option>
+    <option value="dedup">Remove Duplicate Lines</option>
+    <option value="sort-az">Sort Lines A→Z</option>
+    <option value="sort-za">Sort Lines Z→A</option>
+    <option value="number-lines">Number Lines</option>
+    <option value="remove-numbers">Remove Line Numbers</option>
+    <option value="reverse-lines">Reverse Lines</option>
+    <option value="json-fmt">Format JSON</option>
+    <option value="word-stats">Word Count Stats</option>
+  </select>
+  <div class="sep"></div>
+  <div class="btn-group">
+    <button class="btn icon active" id="btn-view-split" data-view="split" title="Split view">⬜</button>
+    <button class="btn icon" id="btn-view-editor" data-view="editor" title="Editor only">✏</button>
+    <button class="btn icon" id="btn-view-preview" data-view="preview" title="Preview only">👁</button>
+  </div>
+  <div class="sep"></div>
+  <button class="btn icon" id="btn-wrap" title="Toggle word wrap" style="color:var(--accent3)">⇥</button>
+  <button class="btn" id="btn-slots" title="Clipboard Slots">📦 Slots</button>
+  <button class="btn" id="btn-history" title="Edit History">🕒 History</button>
+  <button class="btn warn" id="btn-normalize" title="Normalize & clean text">✦ Clean</button>
+  <button class="btn danger" id="btn-clear" title="Clear all">🗑 Clear</button>
+</div>
+
+<!-- TABS -->
+<div id="tabs-bar">
+  <div id="tabs-container" style="display:flex;align-items:flex-end;gap:2px"></div>
+  <div class="tab-new" id="btn-new-tab" title="New tab">＋</div>
+</div>
+
+<!-- WORKSPACE -->
+<div id="workspace">
+
+  <!-- EDITOR PANEL -->
+  <div class="panel" id="editor-panel">
+    <div class="panel-hdr">
+      <span class="panel-label">Editor</span>
+      <span class="panel-badge">MD</span>
+      <div style="display:flex;gap:3px;margin-left:7px">
+        <button class="btn sm" id="btn-select-all" title="Select all">⊡ All</button>
+        <button class="btn sm success" id="btn-save-slot" title="Save to clipboard slot">⊕ Slot</button>
+        <button class="btn sm" id="btn-paste-smart" title="Smart paste from clipboard">⎘ Paste</button>
+      </div>
+    </div>
+    <div id="editor-wrap">
+      <!-- FIND & REPLACE -->
+      <div id="find-replace">
+        <input class="fr-input" id="fr-find" placeholder="Find…" autocomplete="off" spellcheck="false">
+        <input class="fr-input" id="fr-replace" placeholder="Replace…" autocomplete="off" spellcheck="false">
+        <span class="fr-count" id="fr-count">─</span>
+        <button class="btn sm icon" id="fr-prev">↑</button>
+        <button class="btn sm icon" id="fr-next">↓</button>
+        <button class="btn sm" id="fr-rep-one">↻ One</button>
+        <button class="btn sm" id="fr-rep-all">↻ All</button>
+        <label style="font-size:11px;color:var(--text3);display:flex;align-items:center;gap:3px;cursor:pointer;white-space:nowrap">
+          <input type="checkbox" id="fr-case" style="accent-color:var(--accent)"> Case
+        </label>
+        <label style="font-size:11px;color:var(--text3);display:flex;align-items:center;gap:3px;cursor:pointer;white-space:nowrap">
+          <input type="checkbox" id="fr-regex" style="accent-color:var(--accent)"> Regex
+        </label>
+        <button class="btn sm icon danger" id="fr-close">✕</button>
+      </div>
+      <textarea id="editor" class="wrap-on" spellcheck="true"
+        placeholder="Paste Markdown, HTML or plain text here…&#10;&#10;  ● Live preview renders on the right&#10;  ● 'Copy Rich' pastes formatted into Word / Email / Docs&#10;  ● Ctrl+F  →  Find &amp; Replace&#10;  ● Ctrl+K  →  Insert link&#10;  ● Ctrl+S  →  Export .md&#10;  ● Drag &amp; drop files anywhere"></textarea>
+    </div>
+  </div>
+
+  <!-- DIVIDER -->
+  <div class="drag-divider" id="drag-div"></div>
+
+  <!-- PREVIEW PANEL -->
+  <div id="preview-panel" class="panel">
+    <div class="panel-hdr">
+      <span class="panel-label">Preview</span>
+      <div style="display:flex;gap:3px">
+        <button class="btn sm" id="btn-print" title="Print / Save PDF">🖨 Print</button>
+        <button class="btn sm" id="btn-open-win" title="Open in new window">⧉ Window</button>
+      </div>
+    </div>
+    <div id="preview-wrap"><div id="preview"></div></div>
+  </div>
+
+  <!-- SLOTS PANEL -->
+  <div id="slots-panel">
+    <div class="side-inner">
+      <div class="side-hdr">
+        <span class="side-title">📦 Clipboard Slots</span>
+        <button class="btn sm icon danger" id="btn-close-slots">✕</button>
+      </div>
+      <div class="side-body" id="slots-list"></div>
+    </div>
+  </div>
+
+  <!-- HISTORY PANEL -->
+  <div id="history-panel">
+    <div class="side-inner" style="min-width:235px">
+      <div class="side-hdr">
+        <span class="side-title">🕒 History</span>
+        <button class="btn sm danger" id="btn-clear-history">Clear</button>
+        <button class="btn sm icon danger" id="btn-close-history">✕</button>
+      </div>
+      <div class="side-body" id="history-list"></div>
+    </div>
+  </div>
+
+</div><!-- #workspace -->
+
+<!-- STATUS BAR -->
+<div id="status-bar">
+  <div class="sb-item"><div class="sb-dot"></div><span id="sb-save">Ready</span></div>
+  <div class="sb-sep"></div>
+  <div class="sb-item">Words <strong id="sb-words">0</strong></div>
+  <div class="sb-item">Chars <strong id="sb-chars">0</strong></div>
+  <div class="sb-item">Lines <strong id="sb-lines">0</strong></div>
+  <div class="sb-item">Sel <strong id="sb-sel">0</strong></div>
+  <div class="sb-sep"></div>
+  <div class="sb-item">Ln <strong id="sb-ln">1</strong></div>
+  <div class="sb-item">Col <strong id="sb-col">1</strong></div>
+  <div class="sb-sep"></div>
+  <div class="sb-item">~<strong id="sb-read">0</strong> min read</div>
+  <div class="sb-right">
+    <span style="color:var(--text3)">UTF-8</span>
+    <span id="sb-view" style="color:var(--text3)">Split</span>
+  </div>
+</div>
+
+</div><!-- #app -->
+
+<!-- OVERLAYS -->
+<div id="drag-overlay">
+  <div class="drag-box">
+    <h2>Drop file to import</h2>
+    <p style="margin-top:6px">Supports .md · .txt · .html · .rtf · .json · .csv</p>
+  </div>
+</div>
+<div id="modal-overlay"><div class="modal-box" id="modal-box"></div></div>
+<div id="toast-host"></div>
+<input type="file" id="file-input" accept=".md,.markdown,.txt,.html,.htm,.rtf,.json,.csv,.xml" style="display:none">
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  UNIVERSALEDIT PRO v2 — Complete Engine
+// ═══════════════════════════════════════════════════════════════
+
+const $ = id => document.getElementById(id);
+const editor = $('editor');
+const previewEl = $('preview');
+
+// ─── STORAGE KEYS ────────────────────────────────────────────
+const SK = {
+  tabs:'uep2_tabs', active:'uep2_active', slots:'uep2_slots',
+  history:'uep2_history', theme:'uep2_theme', view:'uep2_view',
+  wrap:'uep2_wrap', divW:'uep2_divW'
+};
+
+// ─── STATE ───────────────────────────────────────────────────
+let tabs = [], activeTab = 0;
+let slots = [], historyLog = [];
+let undoStack = [], redoStack = [];
+let saveTimer = null, histTimer = null;
+let currentView = 'split';
+let wrapOn = true;
+let frMatches = [], frIndex = 0;
+let isResizing = false;
+
+// ═══════════════════════════════════════════════════════════════
+//  MARKDOWN → HTML  (full GFM-compatible parser)
+// ═══════════════════════════════════════════════════════════════
+function mdToHtml(src) {
+  if (!src) return '';
+  let t = src.replace(/\r\n/g,'\n').replace(/\r/g,'\n');
+
+  // Store fenced code blocks
+  const codeBlocks = [];
+  t = t.replace(/^```([\w+\-#.]*)\n?([\s\S]*?)^```\s*$/gm, (_,lang,code) => {
+    const esc = esc_(code.replace(/\n$/,''));
+    const idx = codeBlocks.length;
+    codeBlocks.push(`<pre style="position:relative"><button class="btn sm code-copy-btn" onclick="copyCode(this)" title="Copy">Copy</button><code class="lang-${esc_(lang)}">${esc}</code></pre>`);
+    return `\x02CODE${idx}\x02`;
+  });
+
+  // Inline code (protect)
+  const inlineCodes = [];
+  t = t.replace(/`([^`\n]+)`/g, (_,c) => {
+    const idx = inlineCodes.length;
+    inlineCodes.push(`<code>${esc_(c)}</code>`);
+    return `\x03IC${idx}\x03`;
+  });
+
+  // Tables
+  t = t.replace(/^(\|.+\|[ \t]*\n\|[ \t]*[-:| \t]+\|[ \t]*\n(?:\|.+\|[ \t]*\n?)*)/gm, block => {
+    const rows = block.trim().split('\n');
+    if (rows.length < 2) return block;
+    const parseRow = r => r.replace(/^\||\|$/g,'').split('|').map(c => c.trim());
+    const alignRow = rows[1];
+    const aligns = parseRow(alignRow).map(c => {
+      if (/^:-+:$/.test(c)) return 'center';
+      if (/^-+:$/.test(c)) return 'right';
+      return 'left';
+    });
+    const headers = parseRow(rows[0]);
+    const bodyRows = rows.slice(2).map(parseRow);
+    let out = '<table>\n<thead><tr>';
+    headers.forEach((h,i) => out += `<th style="text-align:${aligns[i]||'left'}">${inlineParse(h)}</th>`);
+    out += '</tr></thead>\n<tbody>\n';
+    bodyRows.forEach(r => {
+      out += '<tr>';
+      r.forEach((c,i) => out += `<td style="text-align:${aligns[i]||'left'}">${inlineParse(c)}</td>`);
+      out += '</tr>\n';
+    });
+    return out + '</tbody></table>\n';
+  });
+
+  // Setext headings
+  t = t.replace(/^([^\n]+)\n={3,}\s*$/gm, (_,h) => `<h1>${inlineParse(h)}</h1>`);
+  t = t.replace(/^([^\n]+)\n-{3,}\s*$/gm, (_,h) => `<h2>${inlineParse(h)}</h2>`);
+
+  // ATX headings
+  t = t.replace(/^(#{1,6})[ \t]+(.+?)[ \t]*#*\s*$/gm, (_,hh,txt) =>
+    `<h${hh.length}>${inlineParse(txt)}</h${hh.length}>`);
+
+  // Horizontal rules
+  t = t.replace(/^[ \t]*(?:[-*_][ \t]*){3,}\s*$/gm, '<hr>');
+
+  // Blockquotes
+  t = processBlockquotes(t);
+
+  // Lists
+  t = processLists(t);
+
+  // Blank lines → paragraphs
+  const parts = t.split(/\n{2,}/);
+  t = parts.map(chunk => {
+    chunk = chunk.trim();
+    if (!chunk) return '';
+    if (/^\x02CODE|^\x03IC|^<(h[1-6]|ul|ol|li|pre|blockquote|table|hr|div)/.test(chunk)) return chunk;
+    return `<p>${chunk.replace(/\n/g,' ')}</p>`;
+  }).join('\n');
+
+  // Restore code blocks
+  codeBlocks.forEach((b,i) => { t = t.replace(`\x02CODE${i}\x02`, b); });
+  inlineCodes.forEach((c,i) => { t = t.replace(`\x03IC${i}\x03`, c); });
+
+  return t;
+}
+
+function inlineParse(t) {
+  if (!t) return '';
+  // images before links
+  t = t.replace(/!\[([^\]]*)\]\(([^)]+?)(?:\s+"([^"]*)")?\)/g,
+    (_,alt,src,title) => `<img src="${esc_(src)}" alt="${esc_(alt)}"${title?` title="${esc_(title)}"`:''} loading="lazy">`);
+  // links
+  t = t.replace(/\[([^\]]+)\]\(([^)]+?)(?:\s+"([^"]*)")?\)/g,
+    (_,text,href,title) => `<a href="${esc_(href)}" target="_blank" rel="noopener"${title?` title="${esc_(title)}"`:''} >${text}</a>`);
+  // auto-links
+  t = t.replace(/(?<![">])(https?:\/\/[^\s<>"]+)/g, url => `<a href="${url}" target="_blank" rel="noopener">${url}</a>`);
+  // bold-italic
+  t = t.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+  t = t.replace(/___(.+?)___/g, '<strong><em>$1</em></strong>');
+  // bold
+  t = t.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  t = t.replace(/__(.+?)__/g, '<strong>$1</strong>');
+  // italic
+  t = t.replace(/\*([^*\n]+?)\*/g, '<em>$1</em>');
+  t = t.replace(/_([^_\n]+?)_/g, '<em>$1</em>');
+  // strikethrough
+  t = t.replace(/~~(.+?)~~/g, '<del>$1</del>');
+  // highlight
+  t = t.replace(/==(.+?)==/g, '<mark>$1</mark>');
+  // line breaks
+  t = t.replace(/  \n/g, '<br>');
+  t = t.replace(/\\\n/g, '<br>');
+  return t;
+}
+
+function processBlockquotes(t) {
+  return t.replace(/((?:^>[ \t]?.+\n?)+)/gm, block => {
+    const inner = block.replace(/^>[ \t]?/gm, '');
+    return `<blockquote>${inlineParse(inner.trim())}</blockquote>`;
+  });
+}
+
+function processLists(t) {
+  // Unordered
+  t = t.replace(/((?:^[ \t]*[-*+][ \t]+.+\n?(?:[ \t]+.+\n?)*)+)/gm, block => {
+    const items = block.trim().split(/\n(?=[ \t]*[-*+][ \t])/);
+    const lis = items.map(item => {
+      const content = item.replace(/^[ \t]*[-*+][ \t]+/, '').trim();
+      // Task list
+      if (/^\[x\] /i.test(content)) return `<li><input type="checkbox" checked disabled> ${inlineParse(content.replace(/^\[x\] /i,''))}</li>`;
+      if (/^\[ \] /.test(content)) return `<li><input type="checkbox"disabled> ${inlineParse(content.replace(/^\[ \] /,''))}</li>`;
+      return `<li>${inlineParse(content)}</li>`;
+    });
+    return `<ul>${lis.join('')}</ul>`;
+  });
+
+  // Ordered
+  t = t.replace(/((?:^[ \t]*\d+\.[ \t]+.+\n?(?:[ \t]+.+\n?)*)+)/gm, block => {
+    const items = block.trim().split(/\n(?=[ \t]*\d+\.[ \t])/);
+    const lis = items.map(item => {
+      const content = item.replace(/^[ \t]*\d+\.[ \t]+/, '').trim();
+      return `<li>${inlineParse(content)}</li>`;
+    });
+    return `<ol>${lis.join('')}</ol>`;
+  });
+
+  return t;
+}
+
+function esc_(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  TABS
+// ═══════════════════════════════════════════════════════════════
+function newTab(content = '', name = null) {
+  const id = Date.now();
+  const tab = { id, name: name || `Doc ${tabs.length + 1}`, content, cursor: 0 };
+  tabs.push(tab);
+  return tab;
+}
+
+function renderTabs() {
+  const container = $('tabs-container');
+  container.innerHTML = '';
+  tabs.forEach((tab, i) => {
+    const el = document.createElement('div');
+    el.className = 'tab' + (i === activeTab ? ' active' : '') + (tab.dirty ? ' tab-dirty' : '');
+    el.innerHTML = `<span class="tab-name" style="overflow:hidden;text-overflow:ellipsis;max-width:110px">${esc_(tab.name)}</span>` +
+      (tabs.length > 1 ? `<span class="tab-close" title="Close tab" data-idx="${i}">✕</span>` : '');
+    el.addEventListener('click', (e) => {
+      if (e.target.classList.contains('tab-close')) {
+        closeTab(parseInt(e.target.dataset.idx));
+      } else {
+        switchTab(i);
+      }
+    });
+    el.addEventListener('dblclick', (e) => {
+      if (!e.target.classList.contains('tab-close')) renameTab(i);
+    });
+    container.appendChild(el);
+  });
+}
+
+function switchTab(i) {
+  saveCurrent();
+  activeTab = i;
+  loadCurrent();
+  renderTabs();
+  saveTabs();
+}
+
+function closeTab(i) {
+  if (tabs.length === 1) { tabs[0].content = ''; tabs[0].dirty = false; loadCurrent(); renderTabs(); return; }
+  tabs.splice(i, 1);
+  if (activeTab >= tabs.length) activeTab = tabs.length - 1;
+  loadCurrent();
+  renderTabs();
+  saveTabs();
+}
+
+function renameTab(i) {
+  showModal({
+    title: 'Rename Tab',
+    body: '',
+    inputs: [{ label: 'Tab name', id: 'rename-val', value: tabs[i].name }],
+    confirm: 'Rename',
+    onConfirm: () => {
+      const v = $('rename-val').value.trim();
+      if (v) { tabs[i].name = v; renderTabs(); saveTabs(); }
+    }
+  });
+}
+
+function saveCurrent() {
+  if (tabs[activeTab]) {
+    tabs[activeTab].content = editor.value;
+    tabs[activeTab].cursor = editor.selectionStart;
+  }
+}
+
+function loadCurrent() {
+  if (!tabs[activeTab]) return;
+  editor.value = tabs[activeTab].content || '';
+  setTimeout(() => {
+    editor.selectionStart = editor.selectionEnd = tabs[activeTab].cursor || 0;
+  }, 10);
+  renderPreview();
+  updateStats();
+  undoStack = [editor.value];
+  redoStack = [];
+}
+
+function saveTabs() {
+  try {
+    localStorage.setItem(SK.tabs, JSON.stringify(tabs.map(t => ({ id:t.id, name:t.name, content:t.content }))));
+    localStorage.setItem(SK.active, activeTab);
+  } catch(e) {}
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  PREVIEW
+// ═══════════════════════════════════════════════════════════════
+function renderPreview() {
+  previewEl.innerHTML = mdToHtml(editor.value);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  STATS
+// ═══════════════════════════════════════════════════════════════
+function updateStats() {
+  const t = editor.value;
+  const words = t.trim() ? t.trim().split(/\s+/).length : 0;
+  const sel = Math.abs(editor.selectionEnd - editor.selectionStart);
+  const lines = t ? t.split('\n').length : 1;
+  const pos = t.slice(0, editor.selectionStart);
+  const ln = (pos.match(/\n/g)||[]).length + 1;
+  const col = editor.selectionStart - (pos.lastIndexOf('\n') + 1) + 1;
+  const read = Math.max(1, Math.round(words / 200));
+
+  $('sb-words').textContent = words;
+  $('sb-chars').textContent = t.length;
+  $('sb-lines').textContent = lines;
+  $('sb-sel').textContent = sel;
+  $('sb-ln').textContent = ln;
+  $('sb-col').textContent = col;
+  $('sb-read').textContent = read;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  UNDO / REDO
+// ═══════════════════════════════════════════════════════════════
+function pushUndo(val) {
+  if (undoStack[undoStack.length - 1] !== val) {
+    undoStack.push(val);
+    if (undoStack.length > 300) undoStack.shift();
+    redoStack = [];
+  }
+}
+
+function doUndo() {
+  if (undoStack.length < 2) return;
+  redoStack.push(undoStack.pop());
+  editor.value = undoStack[undoStack.length - 1];
+  afterEdit(false);
+}
+
+function doRedo() {
+  if (!redoStack.length) return;
+  const val = redoStack.pop();
+  undoStack.push(val);
+  editor.value = val;
+  afterEdit(false);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  EDITOR INPUT
+// ═══════════════════════════════════════════════════════════════
+let undoDebounce = null;
+
+function afterEdit(trackUndo = true) {
+  renderPreview();
+  updateStats();
+  if (tabs[activeTab]) tabs[activeTab].dirty = true;
+  renderTabs();
+
+  clearTimeout(saveTimer);
+  $('sb-save').textContent = 'Editing…';
+  saveTimer = setTimeout(() => {
+    saveCurrent();
+    saveTabs();
+    pushHistory(editor.value);
+    $('sb-save').textContent = 'Saved';
+  }, 800);
+
+  if (trackUndo) {
+    clearTimeout(undoDebounce);
+    undoDebounce = setTimeout(() => pushUndo(editor.value), 500);
+  }
+}
+
+editor.addEventListener('input', () => afterEdit(true));
+
+editor.addEventListener('keyup', updateStats);
+editor.addEventListener('mouseup', updateStats);
+editor.addEventListener('click', updateStats);
+
+editor.addEventListener('keydown', e => {
+  // Tab → 2 spaces
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    const s = editor.selectionStart, en = editor.selectionEnd;
+    if (s === en) {
+      insertText('  ');
+    } else {
+      // indent selection
+      const lines = editor.value.split('\n');
+      let charCount = 0, startLine = -1, endLine = -1;
+      for (let i = 0; i < lines.length; i++) {
+        if (charCount + lines[i].length >= s && startLine === -1) startLine = i;
+        if (charCount + lines[i].length >= en - 1) { endLine = i; break; }
+        charCount += lines[i].length + 1;
+      }
+      if (startLine >= 0 && endLine >= 0) {
+        for (let i = startLine; i <= endLine; i++) lines[i] = '  ' + lines[i];
+        editor.value = lines.join('\n');
+        afterEdit(true);
+      }
+    }
+    return;
+  }
+
+  const ctrl = e.ctrlKey || e.metaKey;
+
+  // Shortcuts
+  if (ctrl && e.key === 'z' && !e.shiftKey) { e.preventDefault(); doUndo(); return; }
+  if (ctrl && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); doRedo(); return; }
+  if (ctrl && e.key === 'f') { e.preventDefault(); openFind(); return; }
+  if (ctrl && e.key === 'k') { e.preventDefault(); insertLink(); return; }
+  if (ctrl && e.key === 's') { e.preventDefault(); exportFile('md'); return; }
+  if (ctrl && e.key === 'b') { e.preventDefault(); wrapSelection('**'); return; }
+  if (ctrl && e.key === 'i') { e.preventDefault(); wrapSelection('*'); return; }
+  if (ctrl && e.shiftKey && e.key === 'C') { e.preventDefault(); copyRich(); return; }
+
+  // Auto-pair brackets
+  const pairs = { '(':')', '[':']', '{':'}', '"':'"', "'":"'" };
+  if (pairs[e.key] && !e.ctrlKey) {
+    const s = editor.selectionStart, en = editor.selectionEnd;
+    if (s !== en) {
+      e.preventDefault();
+      const sel = editor.value.slice(s, en);
+      insertText(e.key + sel + pairs[e.key], s, en);
+      editor.selectionStart = s + 1;
+      editor.selectionEnd = en + 1;
+    }
+  }
+
+  if (e.key === 'Escape') { closeFind(); }
+});
+
+// ═══════════════════════════════════════════════════════════════
+//  TEXT INSERTION HELPERS
+// ═══════════════════════════════════════════════════════════════
+function insertText(text, start, end) {
+  const s = start !== undefined ? start : editor.selectionStart;
+  const e2 = end !== undefined ? end : editor.selectionEnd;
+  editor.setRangeText(text, s, e2, 'end');
+  editor.focus();
+  afterEdit(true);
+}
+
+function wrapSelection(marker, markerEnd) {
+  const end = markerEnd || marker;
+  const s = editor.selectionStart, e2 = editor.selectionEnd;
+  const sel = editor.value.slice(s, e2) || 'text';
+  const replacement = marker + sel + end;
+  editor.setRangeText(replacement, s, e2, 'select');
+  editor.selectionStart = s + marker.length;
+  editor.selectionEnd = s + marker.length + sel.length;
+  editor.focus();
+  afterEdit(true);
+}
+
+function prefixLines(prefix) {
+  const s = editor.selectionStart, e2 = editor.selectionEnd;
+  const val = editor.value;
+  const lineStart = val.lastIndexOf('\n', s - 1) + 1;
+  const lineEnd = val.indexOf('\n', e2);
+  const end = lineEnd === -1 ? val.length : lineEnd;
+  const block = val.slice(lineStart, end);
+  const updated = block.split('\n').map(l => prefix + l).join('\n');
+  editor.setRangeText(updated, lineStart, end, 'end');
+  editor.focus();
+  afterEdit(true);
+}
+
+function insertLink() {
+  showModal({
+    title: '🔗 Insert Link',
+    body: 'Enter the URL and optional display text.',
+    inputs: [
+      { label: 'URL', id: 'link-url', value: 'https://', placeholder: 'https://example.com' },
+      { label: 'Display text (optional)', id: 'link-text', value: '', placeholder: 'Link text' }
+    ],
+    confirm: 'Insert',
+    onConfirm: () => {
+      const url = $('link-url').value.trim();
+      const text = $('link-text').value.trim() || url;
+      if (url) insertText(`[${text}](${url})`);
+    }
+  });
+}
+
+function insertImage() {
+  showModal({
+    title: '🖼 Insert Image',
+    body: '',
+    inputs: [
+      { label: 'Image URL', id: 'img-url', value: 'https://', placeholder: 'https://example.com/image.png' },
+      { label: 'Alt text', id: 'img-alt', value: '', placeholder: 'Description' }
+    ],
+    confirm: 'Insert',
+    onConfirm: () => {
+      const url = $('img-url').value.trim();
+      const alt = $('img-alt').value.trim() || 'image';
+      if (url) insertText(`![${alt}](${url})`);
+    }
+  });
+}
+
+function insertTable() {
+  showModal({
+    title: '⊞ Insert Table',
+    body: '',
+    inputs: [
+      { label: 'Columns', id: 'tbl-cols', value: '3', type: 'number' },
+      { label: 'Rows', id: 'tbl-rows', value: '3', type: 'number' }
+    ],
+    confirm: 'Insert',
+    onConfirm: () => {
+      const cols = Math.max(1, Math.min(12, parseInt($('tbl-cols').value) || 3));
+      const rows = Math.max(1, Math.min(20, parseInt($('tbl-rows').value) || 3));
+      const header = '| ' + Array.from({length:cols}, (_,i) => `Header ${i+1}`).join(' | ') + ' |';
+      const sep = '| ' + Array.from({length:cols}, () => '---').join(' | ') + ' |';
+      const bodyRows = Array.from({length:rows}, () =>
+        '| ' + Array.from({length:cols}, () => 'Cell').join(' | ') + ' |'
+      );
+      insertText('\n' + [header, sep, ...bodyRows].join('\n') + '\n');
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  CLIPBOARD OPERATIONS
+// ═══════════════════════════════════════════════════════════════
+async function copyRich() {
+  try {
+    const html = mdToHtml(editor.value);
+    const fullHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>
+      body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:11pt;line-height:1.6;color:#1a1a1a;max-width:900px;margin:0 auto;padding:20px}
+      h1,h2,h3,h4,h5,h6{color:#1a1a1a;margin-top:1.4em;margin-bottom:.5em;font-weight:700}
+      h1{font-size:2em;border-bottom:2px solid #4f8ef7;padding-bottom:.3em}
+      h2{font-size:1.5em;border-bottom:1px solid #ddd;padding-bottom:.25em}
+      h3{font-size:1.2em;color:#333}
+      p{margin:.75em 0;color:#333}
+      a{color:#2563eb;text-decoration:none}
+      strong{font-weight:700}em{font-style:italic}
+      code{background:#f3f4f6;padding:2px 6px;border-radius:4px;font-family:'Consolas','Courier New',monospace;font-size:.88em;color:#e44}
+      pre{background:#f8f9fa;border:1px solid #e5e7eb;border-left:3px solid #4f8ef7;border-radius:6px;padding:14px 18px;overflow-x:auto;margin:1em 0}
+      pre code{background:transparent;padding:0;color:#1a1a1a;font-size:.9em}
+      blockquote{border-left:3px solid #7c6fef;background:#f8f7ff;margin:1em 0;padding:10px 16px;border-radius:0 6px 6px 0;color:#555;font-style:italic}
+      ul,ol{padding-left:22px;margin:.75em 0}li{margin:.3em 0}
+      table{width:100%;border-collapse:collapse;margin:.9em 0}
+      th{background:#f3f4f6;padding:8px 12px;text-align:left;border:1px solid #ddd;font-weight:700;color:#333}
+      td{padding:7px 12px;border:1px solid #e5e7eb;color:#555}
+      tr:nth-child(even) td{background:#fafafa}
+      img{max-width:100%;border-radius:6px}hr{border:none;border-top:1px solid #e5e7eb;margin:1.8em 0}
+      mark{background:#fef3c7;padding:1px 4px;border-radius:3px}
+      del{color:#999;text-decoration:line-through}
+      input[type=checkbox]{accent-color:#4f8ef7;margin-right:5px}
+    </style></head><body>${html}</body></html>`;
+
+    if (navigator.clipboard && window.ClipboardItem) {
+      await navigator.clipboard.write([new ClipboardItem({
+        'text/html': new Blob([fullHtml], { type: 'text/html' }),
+        'text/plain': new Blob([stripMd(editor.value)], { type: 'text/plain' })
+      })]);
+      toast('✅ Rich Text copied — paste into Word, Email, Docs', 'ok');
+    } else {
+      await navigator.clipboard.writeText(stripMd(editor.value));
+      toast('Copied as plain text (browser restriction)', 'warn');
+    }
+  } catch(err) {
+    toast('Copy failed: ' + err.message, 'err');
+  }
+}
+
+async function copyHtml() {
+  try {
+    const html = mdToHtml(editor.value);
+    await navigator.clipboard.writeText(html);
+    toast('HTML copied to clipboard', 'ok');
+  } catch(e) { toast('Copy failed', 'err'); }
+}
+
+async function copyMd() {
+  try {
+    await navigator.clipboard.writeText(editor.value);
+    toast('Markdown copied', 'ok');
+  } catch(e) { toast('Copy failed', 'err'); }
+}
+
+async function copyPlain() {
+  try {
+    await navigator.clipboard.writeText(stripMd(editor.value));
+    toast('Plain text copied', 'ok');
+  } catch(e) { toast('Copy failed', 'err'); }
+}
+
+window.copyCode = function(btn) {
+  const code = btn.nextElementSibling ? btn.nextElementSibling.textContent : '';
+  navigator.clipboard.writeText(code).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = orig, 1800);
+  });
+};
+
+async function smartPaste() {
+  try {
+    if (navigator.clipboard && navigator.clipboard.read) {
+      const items = await navigator.clipboard.read();
+      for (const item of items) {
+        if (item.types.includes('text/html')) {
+          const blob = await item.getType('text/html');
+          const html = await blob.text();
+          const md = htmlToMd(html);
+          insertText(md);
+          toast('Pasted HTML → converted to Markdown', 'info');
+          return;
+        }
+        if (item.types.includes('text/plain')) {
+          const blob = await item.getType('text/plain');
+          insertText(await blob.text());
+          toast('Pasted plain text', 'info');
+          return;
+        }
+      }
+    }
+    const text = await navigator.clipboard.readText();
+    insertText(text);
+    toast('Pasted text', 'info');
+  } catch(e) {
+    toast('Use Ctrl+V to paste directly into editor', 'warn');
+    editor.focus();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  HTML → MARKDOWN CONVERTER
+// ═══════════════════════════════════════════════════════════════
+function htmlToMd(html) {
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  // Remove scripts, styles
+  div.querySelectorAll('script,style,meta,link').forEach(el => el.remove());
+  return nodeToMd(div).replace(/\n{3,}/g, '\n\n').trim();
+}
+
+function nodeToMd(node) {
+  if (node.nodeType === Node.TEXT_NODE) {
+    return node.textContent.replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ');
+  }
+  if (node.nodeType !== Node.ELEMENT_NODE) return '';
+
+  const tag = node.tagName.toLowerCase();
+  const children = () => [...node.childNodes].map(nodeToMd).join('');
+  const block = inner => '\n\n' + inner + '\n\n';
+
+  switch(tag) {
+    case 'h1': return block(`# ${children()}`);
+    case 'h2': return block(`## ${children()}`);
+    case 'h3': return block(`### ${children()}`);
+    case 'h4': return block(`#### ${children()}`);
+    case 'h5': return block(`##### ${children()}`);
+    case 'h6': return block(`###### ${children()}`);
+    case 'p': return block(children());
+    case 'br': return '  \n';
+    case 'hr': return block('---');
+    case 'strong': case 'b': return `**${children()}**`;
+    case 'em': case 'i': return `*${children()}*`;
+    case 'del': case 's': case 'strike': return `~~${children()}~~`;
+    case 'mark': return `==${children()}==`;
+    case 'code':
+      if (node.parentElement?.tagName?.toLowerCase() === 'pre') return node.textContent;
+      return `\`${node.textContent}\``;
+    case 'pre': {
+      const lang = (node.querySelector('code')?.className?.match(/lang(?:uage)?-(\w+)/) || [])[1] || '';
+      return block('```' + lang + '\n' + node.textContent.trim() + '\n```');
+    }
+    case 'blockquote':
+      return block(children().trim().split('\n').map(l => '> ' + l).join('\n'));
+    case 'a': {
+      const href = node.getAttribute('href') || '';
+      const text = children();
+      return href ? `[${text}](${href})` : text;
+    }
+    case 'img': {
+      const src = node.getAttribute('src') || '';
+      const alt = node.getAttribute('alt') || '';
+      return `![${alt}](${src})`;
+    }
+    case 'ul': {
+      const items = [...node.children].map(li => {
+        const cb = li.querySelector('input[type="checkbox"]');
+        const prefix = cb ? (cb.checked ? '- [x] ' : '- [ ] ') : '- ';
+        const content = nodeToMd(li).trim();
+        return prefix + content;
+      });
+      return block(items.join('\n'));
+    }
+    case 'ol': {
+      const items = [...node.children].map((li, i) => `${i+1}. ${nodeToMd(li).trim()}`);
+      return block(items.join('\n'));
+    }
+    case 'li': return children().trim();
+    case 'table': {
+      const rows = [...node.querySelectorAll('tr')];
+      if (!rows.length) return '';
+      const parseRow = tr => [...tr.children].map(c => nodeToMd(c).trim().replace(/\|/g,'\\|'));
+      const headerRow = parseRow(rows[0]);
+      const sepRow = headerRow.map(() => '---');
+      const bodyRows = rows.slice(1).map(parseRow);
+      const fmt = cells => '| ' + cells.join(' | ') + ' |';
+      return block([fmt(headerRow), fmt(sepRow), ...bodyRows.map(fmt)].join('\n'));
+    }
+    case 'div': case 'section': case 'article': case 'main':
+    case 'header': case 'footer': case 'aside': case 'nav':
+      return block(children());
+    case 'span': return children();
+    case 'input':
+      if (node.type === 'checkbox') return node.checked ? '[x] ' : '[ ] ';
+      return '';
+    case 'head': case 'script': case 'style': return '';
+    default: return children();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  STRIP MARKDOWN
+// ═══════════════════════════════════════════════════════════════
+function stripMd(text) {
+  return text
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/\*\*\*(.+?)\*\*\*/g, '$1')
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/\*(.+?)\*/g, '$1')
+    .replace(/~~(.+?)~~/g, '$1')
+    .replace(/==(.+?)==/g, '$1')
+    .replace(/`{3}[\s\S]*?`{3}/g, '')
+    .replace(/`(.+?)`/g, '$1')
+    .replace(/!\[([^\]]*)\]\([^)]+\)/g, '$1')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/^[-*+]\s+/gm, '')
+    .replace(/^\d+\.\s+/gm, '')
+    .replace(/^>\s?/gm, '')
+    .replace(/^[-*_]{3,}\s*$/gm, '---')
+    .replace(/\|\s*/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  IMPORT / EXPORT
+// ═══════════════════════════════════════════════════════════════
+$('btn-import').addEventListener('click', () => $('file-input').click());
+
+$('file-input').addEventListener('change', async e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  await importFile(file);
+  e.target.value = '';
+});
+
+async function importFile(file) {
+  const text = await file.text();
+  const name = file.name;
+  const ext = name.split('.').pop().toLowerCase();
+  let content = text;
+
+  if (ext === 'html' || ext === 'htm') {
+    content = htmlToMd(text);
+    toast('HTML imported → converted to Markdown', 'info');
+  } else if (ext === 'rtf') {
+    content = text.replace(/\\[a-z]+\d*\s?/g,'').replace(/[{}]/g,'').trim();
+    toast('RTF imported (basic strip)', 'warn');
+  } else if (ext === 'json') {
+    try {
+      const data = JSON.parse(text);
+      content = data.content || data.markdown || data.text || data.body ||
+                (typeof data === 'string' ? data : JSON.stringify(data, null, 2));
+    } catch { content = text; }
+    toast('JSON imported', 'info');
+  } else if (ext === 'csv') {
+    const lines = text.trim().split('\n').map(l => l.split(',').map(c => c.replace(/^"|"$/g,'').trim()));
+    const header = '| ' + lines[0].join(' | ') + ' |';
+    const sep = '| ' + lines[0].map(() => '---').join(' | ') + ' |';
+    const rows = lines.slice(1).map(r => '| ' + r.join(' | ') + ' |');
+    content = [header, sep, ...rows].join('\n');
+    toast('CSV imported as Markdown table', 'ok');
+  } else {
+    toast(`Imported ${name}`, 'ok');
+  }
+
+  newTab(content, name);
+  activeTab = tabs.length - 1;
+  loadCurrent();
+  renderTabs();
+  saveTabs();
+}
+
+function exportFile(fmt) {
+  const ts = new Date().toISOString().slice(0,19).replace(/[T:]/g,'-');
+  let content, filename, mime;
+
+  if (fmt === 'md') {
+    content = editor.value;
+    filename = `export-${ts}.md`;
+    mime = 'text/markdown';
+  } else if (fmt === 'html') {
+    const html = mdToHtml(editor.value);
+    content = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${esc_(tabs[activeTab]?.name || 'Export')}</title>
+<style>
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;
+    max-width:860px;margin:40px auto;padding:0 24px;line-height:1.75;color:#1a1a1a;font-size:16px}
+  h1{font-size:2em;border-bottom:2px solid #4f8ef7;padding-bottom:.3em;margin-top:1.4em}
+  h2{font-size:1.5em;border-bottom:1px solid #ddd;padding-bottom:.25em;margin-top:1.4em}
+  h3{font-size:1.2em;color:#333;margin-top:1.4em}
+  p{margin:.75em 0;color:#333}
+  a{color:#2563eb}
+  code{background:#f3f4f6;padding:2px 5px;border-radius:4px;font-family:Consolas,monospace;font-size:.88em;color:#c00}
+  pre{background:#f8f9fa;border:1px solid #e0e0e0;border-left:3px solid #4f8ef7;
+    border-radius:6px;padding:14px 18px;overflow-x:auto;margin:1em 0}
+  pre code{background:none;padding:0;color:#1a1a1a}
+  blockquote{border-left:3px solid #7c6fef;background:#f8f7ff;margin:1em 0;
+    padding:10px 16px;color:#555;font-style:italic;border-radius:0 6px 6px 0}
+  ul,ol{padding-left:22px;margin:.75em 0}li{margin:.3em 0}
+  table{width:100%;border-collapse:collapse;margin:.9em 0}
+  th{background:#f3f4f6;padding:8px 12px;border:1px solid #ddd;text-align:left;font-weight:700}
+  td{padding:7px 12px;border:1px solid #e5e7eb}tr:nth-child(even) td{background:#fafafa}
+  img{max-width:100%;border-radius:6px}
+  hr{border:none;border-top:1px solid #e5e7eb;margin:1.8em 0}
+  mark{background:#fef3c7;padding:1px 4px;border-radius:3px}
+</style>
+</head>
+<body>
+${html}
+</body>
+</html>`;
+    filename = `export-${ts}.html`;
+    mime = 'text/html';
+  } else {
+    content = stripMd(editor.value);
+    filename = `export-${ts}.txt`;
+    mime = 'text/plain';
+  }
+
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], { type: mime }));
+  a.download = filename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  toast(`Exported ${filename}`, 'ok');
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  FIND & REPLACE
+// ═══════════════════════════════════════════════════════════════
+function openFind() {
+  $('find-replace').classList.add('open');
+  $('fr-find').focus();
+  $('fr-find').select();
+}
+
+function closeFind() {
+  $('find-replace').classList.remove('open');
+  frMatches = [];
+  $('fr-count').textContent = '─';
+  editor.focus();
+}
+
+function buildRegex(pattern, flags = 'g') {
+  const useRegex = $('fr-regex').checked;
+  const caseSensitive = $('fr-case').checked;
+  const f = flags + (caseSensitive ? '' : 'i');
+  try {
+    return useRegex ? new RegExp(pattern, f) : new RegExp(pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), f);
+  } catch { return null; }
+}
+
+function doFind() {
+  const pattern = $('fr-find').value;
+  if (!pattern) { frMatches = []; $('fr-count').textContent = '─'; return; }
+  const re = buildRegex(pattern);
+  if (!re) { $('fr-count').textContent = 'Bad regex'; return; }
+  const text = editor.value;
+  frMatches = [];
+  let m;
+  re.lastIndex = 0;
+  while ((m = re.exec(text)) !== null) {
+    frMatches.push({ start: m.index, end: m.index + m[0].length });
+    if (frMatches.length > 5000) break;
+  }
+  $('fr-count').textContent = frMatches.length ? `${Math.min(frIndex+1, frMatches.length)}/${frMatches.length}` : '0 found';
+  if (frMatches.length) jumpToMatch(0);
+}
+
+function jumpToMatch(i) {
+  frIndex = ((i % frMatches.length) + frMatches.length) % frMatches.length;
+  const m = frMatches[frIndex];
+  editor.focus();
+  editor.setSelectionRange(m.start, m.end);
+  $('fr-count').textContent = `${frIndex+1}/${frMatches.length}`;
+  // Scroll into view
+  const lines = editor.value.slice(0, m.start).split('\n');
+  const lineH = parseInt(getComputedStyle(editor).lineHeight) || 22;
+  editor.scrollTop = (lines.length - 3) * lineH;
+}
+
+function doReplace() {
+  if (!frMatches.length) { doFind(); return; }
+  const m = frMatches[frIndex];
+  const repl = $('fr-replace').value;
+  const pattern = $('fr-find').value;
+  const re = buildRegex(pattern);
+  if (!re) return;
+  const text = editor.value;
+  const match = text.slice(m.start, m.end);
+  const replStr = match.replace(re, repl);
+  editor.setRangeText(replStr, m.start, m.end, 'end');
+  afterEdit(true);
+  doFind();
+}
+
+function doReplaceAll() {
+  const pattern = $('fr-find').value;
+  const repl = $('fr-replace').value;
+  if (!pattern) return;
+  const re = buildRegex(pattern);
+  if (!re) return;
+  const count = (editor.value.match(re) || []).length;
+  editor.value = editor.value.replace(re, repl);
+  afterEdit(true);
+  doFind();
+  toast(`Replaced ${count} occurrence${count !== 1 ? 's' : ''}`, 'ok');
+}
+
+$('fr-find').addEventListener('input', doFind);
+$('fr-find').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.shiftKey ? jumpToMatch(frIndex - 1) : jumpToMatch(frIndex + 1); }
+  if (e.key === 'Escape') closeFind();
+});
+$('fr-replace').addEventListener('keydown', e => { if (e.key === 'Enter') doReplace(); });
+$('fr-prev').addEventListener('click', () => { doFind(); jumpToMatch(frIndex - 1); });
+$('fr-next').addEventListener('click', () => { doFind(); jumpToMatch(frIndex + 1); });
+$('fr-rep-one').addEventListener('click', doReplace);
+$('fr-rep-all').addEventListener('click', doReplaceAll);
+$('fr-close').addEventListener('click', closeFind);
+
+// ═══════════════════════════════════════════════════════════════
+//  TRANSFORMS
+// ═══════════════════════════════════════════════════════════════
+$('sel-transform').addEventListener('change', function() {
+  const val = this.value;
+  if (!val) return;
+  this.value = '';
+  const s = editor.selectionStart, e2 = editor.selectionEnd;
+  const hasSelection = s !== e2;
+  const text = hasSelection ? editor.value.slice(s, e2) : editor.value;
+  let result = text;
+
+  switch(val) {
+    case 'upper': result = text.toUpperCase(); break;
+    case 'lower': result = text.toLowerCase(); break;
+    case 'title': result = text.replace(/\b\w/g, c => c.toUpperCase()); break;
+    case 'sentence': result = text.replace(/(^\s*\w|[.!?]\s+\w)/g, c => c.toUpperCase()); break;
+    case 'trim': result = text.split('\n').map(l => l.trimEnd()).join('\n').replace(/\n{3,}/g,'\n\n').trim(); break;
+    case 'strip-md': result = stripMd(text); break;
+    case 'dedup': {
+      const seen = new Set();
+      result = text.split('\n').filter(l => { const k = l.trim(); if (seen.has(k)) return false; seen.add(k); return true; }).join('\n');
+      break;
+    }
+    case 'sort-az': result = text.split('\n').sort((a,b) => a.localeCompare(b)).join('\n'); break;
+    case 'sort-za': result = text.split('\n').sort((a,b) => b.localeCompare(a)).join('\n'); break;
+    case 'number-lines': result = text.split('\n').map((l,i) => `${i+1}. ${l}`).join('\n'); break;
+    case 'remove-numbers': result = text.split('\n').map(l => l.replace(/^\d+\.\s+/,'')).join('\n'); break;
+    case 'reverse-lines': result = text.split('\n').reverse().join('\n'); break;
+    case 'json-fmt':
+      try { result = JSON.stringify(JSON.parse(text), null, 2); toast('JSON formatted', 'ok'); }
+      catch { toast('Invalid JSON', 'err'); return; }
+      break;
+    case 'word-stats': {
+      const words = text.trim().split(/\s+/).filter(Boolean).length;
+      const chars = text.length;
+      const sentences = (text.match(/[.!?]+/g) || []).length;
+      const paragraphs = text.split(/\n{2,}/).filter(Boolean).length;
+      const readTime = Math.max(1, Math.round(words / 200));
+      showModal({
+        title: '📊 Document Statistics',
+        body: `Words: ${words}\nCharacters: ${chars}\nSentences: ${sentences}\nParagraphs: ${paragraphs}\nEstimated read time: ~${readTime} min`,
+        confirm: 'Close', noCancel: true, onConfirm: () => {}
+      });
+      return;
+    }
+  }
+
+  if (hasSelection) editor.setRangeText(result, s, e2, 'select');
+  else editor.value = result;
+  afterEdit(true);
+  toast('Transform applied', 'ok');
+});
+
+// ═══════════════════════════════════════════════════════════════
+//  VIEW MODE
+// ═══════════════════════════════════════════════════════════════
+function setView(v) {
+  currentView = v;
+  const ep = $('editor-panel'), pp = $('preview-panel'), dd = $('drag-div');
+  ep.style.display = v === 'preview' ? 'none' : 'flex';
+  pp.style.display = v === 'editor' ? 'none' : 'flex';
+  dd.style.display = (v === 'split') ? 'block' : 'none';
+  ['split','editor','preview'].forEach(n => {
+    $(`btn-view-${n}`).classList.toggle('active', n === v);
+  });
+  $('sb-view').textContent = v.charAt(0).toUpperCase() + v.slice(1);
+  localStorage.setItem(SK.view, v);
+}
+
+document.querySelectorAll('[data-view]').forEach(btn => {
+  btn.addEventListener('click', () => setView(btn.dataset.view));
+});
+
+// ═══════════════════════════════════════════════════════════════
+//  WORD WRAP
+// ═══════════════════════════════════════════════════════════════
+function setWrap(on) {
+  wrapOn = on;
+  editor.className = on ? 'wrap-on' : 'wrap-off';
+  $('btn-wrap').classList.toggle('active', on);
+  localStorage.setItem(SK.wrap, on ? '1' : '0');
+}
+
+$('btn-wrap').addEventListener('click', () => setWrap(!wrapOn));
+
+// ═══════════════════════════════════════════════════════════════
+//  DRAG DIVIDER (resizer)
+// ═══════════════════════════════════════════════════════════════
+function setupResizer() {
+  const div = $('drag-div');
+  const ep = $('editor-panel');
+  let startX = 0, startW = 0;
+
+  div.addEventListener('mousedown', e => {
+    isResizing = true;
+    startX = e.clientX;
+    startW = ep.offsetWidth;
+    div.classList.add('dragging');
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (!isResizing) return;
+    const delta = e.clientX - startX;
+    const newW = Math.max(200, Math.min(startW + delta, window.innerWidth - 200));
+    ep.style.flex = 'none';
+    ep.style.width = newW + 'px';
+    localStorage.setItem(SK.divW, newW);
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (!isResizing) return;
+    isResizing = false;
+    div.classList.remove('dragging');
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+  });
+
+  const saved = localStorage.getItem(SK.divW);
+  if (saved) { ep.style.flex = 'none'; ep.style.width = parseInt(saved) + 'px'; }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  CLIPBOARD SLOTS
+// ═══════════════════════════════════════════════════════════════
+function renderSlots() {
+  const list = $('slots-list');
+  if (!slots.length) {
+    list.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:8px 4px">No slots saved yet.<br>Click ⊕ Slot to save current content.</div>';
+    return;
+  }
+  list.innerHTML = slots.map((s, i) => `
+    <div class="slot-card" onclick="loadSlot(${i})">
+      <div class="slot-title">${esc_(s.name)}</div>
+      <div class="slot-preview">${esc_(s.preview)}</div>
+      <div class="slot-meta">${s.date} · ${s.words} words</div>
+      <div class="slot-acts">
+        <button class="btn sm success" onclick="event.stopPropagation();copySlot(${i})" title="Copy">📋</button>
+        <button class="btn sm danger" onclick="event.stopPropagation();deleteSlot(${i})" title="Delete">🗑</button>
+      </div>
+    </div>`).join('');
+}
+
+function saveSlot() {
+  const content = editor.value;
+  if (!content.trim()) { toast('Nothing to save', 'warn'); return; }
+  showModal({
+    title: '⊕ Save to Slot',
+    body: 'Give this clipboard slot a name.',
+    inputs: [{ label: 'Slot name', id: 'slot-name', value: `Slot ${slots.length + 1}` }],
+    confirm: 'Save',
+    onConfirm: () => {
+      const name = $('slot-name').value.trim() || `Slot ${slots.length + 1}`;
+      const words = content.trim().split(/\s+/).filter(Boolean).length;
+      slots.unshift({
+        name,
+        content,
+        preview: content.slice(0, 80).replace(/\n/g,' '),
+        words,
+        date: new Date().toLocaleString()
+      });
+      if (slots.length > 30) slots.pop();
+      saveSlots();
+      renderSlots();
+      toast(`Saved to slot "${name}"`, 'ok');
+    }
+  });
+}
+
+function loadSlot(i) {
+  saveCurrent();
+  newTab(slots[i].content, slots[i].name);
+  activeTab = tabs.length - 1;
+  loadCurrent();
+  renderTabs();
+  saveTabs();
+  toast(`Loaded "${slots[i].name}" into new tab`, 'info');
+}
+
+async function copySlot(i) {
+  try {
+    await navigator.clipboard.writeText(slots[i].content);
+    toast(`Copied "${slots[i].name}"`, 'ok');
+  } catch(e) { toast('Copy failed', 'err'); }
+}
+
+function deleteSlot(i) {
+  slots.splice(i, 1);
+  saveSlots();
+  renderSlots();
+  toast('Slot deleted', 'info');
+}
+
+function saveSlots() {
+  try { localStorage.setItem(SK.slots, JSON.stringify(slots)); } catch(e) {}
+}
+
+function loadSlots() {
+  try { slots = JSON.parse(localStorage.getItem(SK.slots) || '[]'); } catch(e) { slots = []; }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  HISTORY
+// ═══════════════════════════════════════════════════════════════
+function pushHistory(content) {
+  if (!content.trim()) return;
+  const last = historyLog[0];
+  if (last && last.content === content) return;
+  historyLog.unshift({
+    content,
+    preview: content.slice(0, 70).replace(/\n/g,' '),
+    date: new Date().toLocaleTimeString(),
+    words: content.trim().split(/\s+/).filter(Boolean).length
+  });
+  if (historyLog.length > 50) historyLog.pop();
+  try { localStorage.setItem(SK.history, JSON.stringify(historyLog)); } catch(e) {}
+  renderHistory();
+}
+
+function renderHistory() {
+  const list = $('history-list');
+  if (!historyLog.length) {
+    list.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:8px 4px">No history yet. Start editing to track changes.</div>';
+    return;
+  }
+  list.innerHTML = historyLog.map((h, i) => `
+    <div class="hist-item" onclick="restoreHistory(${i})" title="Click to restore">
+      <div class="hist-time">${h.date} · ${h.words} words</div>
+      <div class="hist-preview">${esc_(h.preview)}…</div>
+    </div>`).join('');
+}
+
+function restoreHistory(i) {
+  showModal({
+    title: '🕒 Restore History',
+    body: `Restore this snapshot? Current content will be saved to a slot first.\n\nPreview: "${historyLog[i].preview}…"`,
+    confirm: 'Restore',
+    onConfirm: () => {
+      // Auto-save current to slot before restoring
+      if (editor.value.trim()) {
+        slots.unshift({
+          name: `Auto-save ${new Date().toLocaleTimeString()}`,
+          content: editor.value,
+          preview: editor.value.slice(0, 80).replace(/\n/g,' '),
+          words: editor.value.trim().split(/\s+/).filter(Boolean).length,
+          date: new Date().toLocaleString()
+        });
+        saveSlots();
+        renderSlots();
+      }
+      editor.value = historyLog[i].content;
+      afterEdit(true);
+      toast('History restored', 'ok');
+    }
+  });
+}
+
+function loadHistory() {
+  try { historyLog = JSON.parse(localStorage.getItem(SK.history) || '[]'); } catch(e) { historyLog = []; }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  NORMALIZE / CLEAN
+// ═══════════════════════════════════════════════════════════════
+function normalizeText() {
+  editor.value = editor.value
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n')
+    .replace(/\t/g, '  ')
+    .replace(/\u00A0/g, ' ')
+    .replace(/\u2018|\u2019/g, "'")
+    .replace(/\u201C|\u201D/g, '"')
+    .replace(/\u2013/g, '--')
+    .replace(/\u2014/g, '---')
+    .replace(/\u2026/g, '...')
+    .replace(/[ \t]+$/gm, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+  afterEdit(true);
+  toast('Text normalized — tabs, smart quotes, extra whitespace cleaned', 'ok');
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  THEME
+// ═══════════════════════════════════════════════════════════════
+function setTheme(light) {
+  document.documentElement.classList.toggle('light', light);
+  localStorage.setItem(SK.theme, light ? 'light' : 'dark');
+  $('btn-theme').textContent = light ? '☀️' : '🌗';
+}
+
+$('btn-theme').addEventListener('click', () => {
+  setTheme(!document.documentElement.classList.contains('light'));
+});
+
+// ═══════════════════════════════════════════════════════════════
+//  DRAG & DROP FILE IMPORT
+// ═══════════════════════════════════════════════════════════════
+function setupDragDrop() {
+  const overlay = $('drag-overlay');
+  let dragCount = 0;
+
+  document.addEventListener('dragenter', e => {
+    if (e.dataTransfer.types.includes('Files')) {
+      dragCount++;
+      overlay.classList.add('open');
+    }
+  });
+
+  document.addEventListener('dragleave', () => {
+    dragCount--;
+    if (dragCount <= 0) { dragCount = 0; overlay.classList.remove('open'); }
+  });
+
+  document.addEventListener('dragover', e => e.preventDefault());
+
+  document.addEventListener('drop', async e => {
+    e.preventDefault();
+    dragCount = 0;
+    overlay.classList.remove('open');
+    const file = e.dataTransfer.files[0];
+    if (file) await importFile(file);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════════════════════════════════
+function toast(msg, type = 'info', duration = 2800) {
+  const host = $('toast-host');
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  host.appendChild(el);
+  setTimeout(() => {
+    el.style.transition = 'opacity .25s, transform .25s';
+    el.style.opacity = '0';
+    el.style.transform = 'translateX(12px)';
+    setTimeout(() => el.remove(), 280);
+  }, duration);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  MODAL
+// ═══════════════════════════════════════════════════════════════
+function showModal({ title, body, inputs = [], confirm = 'OK', noCancel = false, onConfirm }) {
+  const overlay = $('modal-overlay');
+  const box = $('modal-box');
+
+  const inputsHtml = inputs.map(inp => `
+    <label class="modal-label">${esc_(inp.label)}</label>
+    <input class="modal-input" id="${inp.id}" type="${inp.type || 'text'}"
+      value="${esc_(inp.value || '')}" placeholder="${esc_(inp.placeholder || '')}">`
+  ).join('');
+
+  const bodyHtml = body
+    ? `<div class="modal-body" style="white-space:pre-wrap">${esc_(body)}</div>`
+    : '';
+
+  box.innerHTML = `
+    <div class="modal-title">${title}</div>
+    ${bodyHtml}
+    ${inputsHtml}
+    <div class="modal-footer">
+      ${noCancel ? '' : '<button class="btn" id="modal-cancel">Cancel</button>'}
+      <button class="btn primary" id="modal-confirm">${esc_(confirm)}</button>
+    </div>`;
+
+  overlay.classList.add('open');
+
+  const close = () => overlay.classList.remove('open');
+
+  $('modal-confirm').addEventListener('click', () => { close(); onConfirm(); });
+  if (!noCancel) $('modal-cancel').addEventListener('click', close);
+  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+
+  // Focus first input
+  setTimeout(() => {
+    const first = box.querySelector('.modal-input');
+    if (first) { first.focus(); first.select(); }
+    else $('modal-confirm').focus();
+  }, 50);
+
+  // Enter to confirm
+  box.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); close(); onConfirm(); }
+    if (e.key === 'Escape') close();
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  SHORTCUTS HELP
+// ═══════════════════════════════════════════════════════════════
+function showShortcuts() {
+  showModal({
+    title: '⌨ Keyboard Shortcuts',
+    body: [
+      'Ctrl+F          Find & Replace',
+      'Ctrl+K          Insert Link',
+      'Ctrl+S          Export .md',
+      'Ctrl+B          Bold',
+      'Ctrl+I          Italic',
+      'Ctrl+Z          Undo',
+      'Ctrl+Y          Redo',
+      'Ctrl+Shift+C    Copy Rich Text',
+      'Tab             Indent (2 spaces)',
+      'Escape          Close Find / Modal',
+      '',
+      'Toolbar buttons support click to insert',
+      'Drag & drop files anywhere to import',
+      'Double-click tab to rename',
+    ].join('\n'),
+    confirm: 'Close',
+    noCancel: true,
+    onConfirm: () => {}
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  PRINT / OPEN IN WINDOW
+// ═══════════════════════════════════════════════════════════════
+$('btn-print').addEventListener('click', () => window.print());
+
+$('btn-open-win').addEventListener('click', () => {
+  const html = mdToHtml(editor.value);
+  const win = window.open('', '_blank');
+  if (!win) { toast('Popup blocked — allow popups for this page', 'warn'); return; }
+  win.document.write(`<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<title>${esc_(tabs[activeTab]?.name || 'Preview')}</title>
+<style>
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;
+    max-width:860px;margin:40px auto;padding:0 24px;line-height:1.75;color:#1a1a1a;font-size:16px}
+  h1{font-size:2em;border-bottom:2px solid #4f8ef7;padding-bottom:.3em;margin-top:1.4em}
+  h2{font-size:1.5em;border-bottom:1px solid #ddd;padding-bottom:.25em;margin-top:1.4em}
+  h3{font-size:1.2em;color:#444}
+  p{margin:.75em 0;color:#333}
+  a{color:#2563eb}
+  code{background:#f3f4f6;padding:2px 5px;border-radius:4px;font-family:Consolas,monospace;font-size:.88em;color:#c00}
+  pre{background:#f8f9fa;border:1px solid #e0e0e0;border-left:3px solid #4f8ef7;
+    border-radius:6px;padding:14px 18px;overflow-x:auto;margin:1em 0}
+  pre code{background:none;padding:0;color:#1a1a1a}
+  blockquote{border-left:3px solid #7c6fef;background:#f8f7ff;margin:1em 0;
+    padding:10px 16px;color:#555;font-style:italic;border-radius:0 6px 6px 0}
+  ul,ol{padding-left:22px;margin:.75em 0}li{margin:.3em 0}
+  table{width:100%;border-collapse:collapse;margin:.9em 0}
+  th{background:#f3f4f6;padding:8px 12px;border:1px solid #ddd;text-align:left;font-weight:700}
+  td{padding:7px 12px;border:1px solid #e5e7eb}
+  tr:nth-child(even) td{background:#fafafa}
+  img{max-width:100%;border-radius:6px}
+  hr{border:none;border-top:1px solid #e5e7eb;margin:1.8em 0}
+  mark{background:#fef3c7;padding:1px 4px;border-radius:3px}
+</style>
+</head><body>${html}</body></html>`);
+  win.document.close();
+});
+
+// ═══════════════════════════════════════════════════════════════
+//  TOOLBAR INSERT BUTTONS
+// ═══════════════════════════════════════════════════════════════
+// Wrap buttons (bold, italic, etc.)
+document.querySelectorAll('[data-wrap]').forEach(btn => {
+  btn.addEventListener('click', () => wrapSelection(btn.dataset.wrap));
+});
+
+// Prefix buttons (headings, lists, quotes)
+document.querySelectorAll('[data-prefix]').forEach(btn => {
+  btn.addEventListener('click', () => prefixLines(btn.dataset.prefix));
+});
+
+$('btn-ins-link').addEventListener('click', insertLink);
+$('btn-ins-img').addEventListener('click', insertImage);
+$('btn-ins-table').addEventListener('click', insertTable);
+
+$('btn-ins-code').addEventListener('click', () => {
+  const s = editor.selectionStart, e2 = editor.selectionEnd;
+  const sel = editor.value.slice(s, e2).trim();
+  if (sel) {
+    editor.setRangeText(`\`\`\`\n${sel}\n\`\`\``, s, e2, 'end');
+  } else {
+    editor.setRangeText('```\n\n```', s, e2, 'end');
+    editor.selectionStart = editor.selectionEnd = s + 4;
+  }
+  editor.focus();
+  afterEdit(true);
+});
+
+$('btn-ins-hr').addEventListener('click', () => {
+  const s = editor.selectionStart;
+  const before = editor.value.slice(0, s);
+  const nl = before.endsWith('\n') ? '' : '\n';
+  editor.setRangeText(`${nl}\n---\n\n`, s, s, 'end');
+  editor.focus();
+  afterEdit(true);
+});
+
+// ═══════════════════════════════════════════════════════════════
+//  HEADER BUTTON WIRING
+// ═══════════════════════════════════════════════════════════════
+$('btn-copy-rich').addEventListener('click', copyRich);
+$('btn-copy-html').addEventListener('click', copyHtml);
+$('btn-copy-md').addEventListener('click', copyMd);
+$('btn-copy-plain').addEventListener('click', copyPlain);
+$('btn-import').addEventListener('click', () => $('file-input').click());
+$('btn-export-md').addEventListener('click', () => exportFile('md'));
+$('btn-export-html').addEventListener('click', () => exportFile('html'));
+$('btn-export-txt').addEventListener('click', () => exportFile('txt'));
+$('btn-shortcuts').addEventListener('click', showShortcuts);
+
+// ═══════════════════════════════════════════════════════════════
+//  TOOLBAR BUTTON WIRING
+// ═══════════════════════════════════════════════════════════════
+$('btn-find').addEventListener('click', openFind);
+$('btn-slots').addEventListener('click', () => {
+  const sp = $('slots-panel');
+  const hp = $('history-panel');
+  const isOpen = sp.classList.contains('open');
+  hp.classList.remove('open');
+  sp.classList.toggle('open', !isOpen);
+  $('btn-slots').classList.toggle('active', !isOpen);
+  $('btn-history').classList.remove('active');
+});
+$('btn-close-slots').addEventListener('click', () => {
+  $('slots-panel').classList.remove('open');
+  $('btn-slots').classList.remove('active');
+});
+$('btn-save-slot').addEventListener('click', saveSlot);
+
+$('btn-history').addEventListener('click', () => {
+  const hp = $('history-panel');
+  const sp = $('slots-panel');
+  const isOpen = hp.classList.contains('open');
+  sp.classList.remove('open');
+  hp.classList.toggle('open', !isOpen);
+  $('btn-history').classList.toggle('active', !isOpen);
+  $('btn-slots').classList.remove('active');
+});
+$('btn-close-history').addEventListener('click', () => {
+  $('history-panel').classList.remove('open');
+  $('btn-history').classList.remove('active');
+});
+$('btn-clear-history').addEventListener('click', () => {
+  showModal({
+    title: 'Clear History?',
+    body: 'This will permanently delete all history snapshots.',
+    confirm: 'Clear',
+    onConfirm: () => {
+      historyLog = [];
+      localStorage.removeItem(SK.history);
+      renderHistory();
+      toast('History cleared', 'info');
+    }
+  });
+});
+
+$('btn-normalize').addEventListener('click', normalizeText);
+
+$('btn-clear').addEventListener('click', () => {
+  showModal({
+    title: '🗑 Clear Editor?',
+    body: 'This will erase all content in the current tab. Current content will be auto-saved to history.',
+    confirm: 'Clear',
+    onConfirm: () => {
+      pushHistory(editor.value);
+      editor.value = '';
+      tabs[activeTab].dirty = false;
+      afterEdit(false);
+      renderTabs();
+      toast('Editor cleared', 'info');
+    }
+  });
+});
+
+$('btn-select-all').addEventListener('click', () => {
+  editor.select();
+  updateStats();
+});
+
+$('btn-paste-smart').addEventListener('click', smartPaste);
+$('btn-new-tab').addEventListener('click', () => {
+  saveCurrent();
+  newTab();
+  activeTab = tabs.length - 1;
+  loadCurrent();
+  renderTabs();
+  saveTabs();
+  editor.focus();
+});
+
+// ═══════════════════════════════════════════════════════════════
+//  SAMPLE CONTENT
+// ═══════════════════════════════════════════════════════════════
+const SAMPLE = `# UniversalEdit Pro v2
+
+Move content between **any apps** without losing formatting.
+
+## ✦ Key Features
+
+- **Copy Rich Text** → pastes formatted into Word, Outlook, Google Docs
+- **Smart Paste** → converts HTML clipboard content to Markdown automatically
+- Live split preview with full GFM support
+- Multi-tab document workspace
+- Clipboard Slots — store and reuse multiple pieces of content
+- Find & Replace with regex support
+- Import: \`.md\` · \`.txt\` · \`.html\` · \`.csv\` · \`.json\`
+- Export: \`.md\` · \`.html\` · \`.txt\`
+- Edit history with restore
+- Text transforms, normalization, word stats
+
+## How It Works
+
+1. Paste your AI output or any Markdown here
+2. Click **Copy Rich** in the top bar
+3. Paste into **Word**, **Outlook**, **Gmail**, **Notion** — formatting preserved ✅
+
+> **Tip:** Use \`Ctrl+F\` to find and replace, \`Ctrl+K\` to insert links, and \`Ctrl+S\` to export.
+
+## Example Table
+
+| Format   | Copy Method   | Best For                        |
+| -------- | ------------- | ------------------------------- |
+| Rich     | Copy Rich     | Word, Email, Google Docs        |
+| HTML     | Copy HTML     | CMS, web editors, code          |
+| Markdown | Copy MD       | GitHub, Notion, AI tools        |
+| Plain    | Copy Plain    | Plain text fields, terminals    |
+
+## Code Example
+
+\`\`\`javascript
+async function copyRichText(markdown) {
+  const html = parseMarkdown(markdown);
+  await navigator.clipboard.write([
+    new ClipboardItem({
+      'text/html': new Blob([html], { type: 'text/html' }),
+      'text/plain': new Blob([markdown], { type: 'text/plain' })
+    })
+  ]);
+}
+\`\`\`
+
+## Formatting Reference
+
+**Bold**, *Italic*, ~~Strikethrough~~, ==Highlight==, \`inline code\`
+
+- [x] Task list item (done)
+- [ ] Task list item (pending)
+
+---
+
+*Start editing above or import a file. Drag & drop files anywhere onto the page.*`;
+
+// ═══════════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════════
+function init() {
+  // Load theme
+  const savedTheme = localStorage.getItem(SK.theme);
+  setTheme(savedTheme === 'light');
+
+  // Load tabs
+  try {
+    const savedTabs = JSON.parse(localStorage.getItem(SK.tabs) || '[]');
+    const savedActive = parseInt(localStorage.getItem(SK.active) || '0');
+    if (savedTabs.length) {
+      tabs = savedTabs.map(t => ({ ...t, dirty: false }));
+      activeTab = Math.min(savedActive, tabs.length - 1);
+    } else {
+      newTab(SAMPLE, 'Welcome');
+    }
+  } catch(e) {
+    newTab(SAMPLE, 'Welcome');
+  }
+
+  // Load slots & history
+  loadSlots();
+  loadHistory();
+
+  // Load view & wrap preferences
+  const savedView = localStorage.getItem(SK.view) || 'split';
+  setView(savedView);
+
+  const savedWrap = localStorage.getItem(SK.wrap);
+  setWrap(savedWrap !== '0');
+
+  // Render everything
+  renderTabs();
+  loadCurrent();
+  renderSlots();
+  renderHistory();
+  setupResizer();
+  setupDragDrop();
+
+  // Initial stats
+  updateStats();
+
+  toast('UniversalEdit Pro ready — Copy Rich pastes formatted into any app', 'info', 4000);
+}
+
+init();
+</script>
+</body>
+</html>

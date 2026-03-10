@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Universal Clipboard Editor</title>
+  <style>
+    :root{
+      --bg: #0b1020;
+      --bg-elev: rgba(255,255,255,0.06);
+      --panel: rgba(15, 23, 42, 0.82);
+      --panel-2: rgba(255,255,255,0.04);
+      --text: #e5eefc;
+      --muted: #9fb0d1;
+      --primary: #6ea8fe;
+      --primary-2: #8b5cf6;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --border: rgba(255,255,255,0.12);
+      --shadow: 0 12px 40px rgba(0,0,0,0.35);
+      --radius: 18px;
+      --code-bg: rgba(255,255,255,0.06);
+    }
+
+    body.light{
+      --bg: #eef4ff;
+      --bg-elev: rgba(255,255,255,0.75);
+      --panel: rgba(255,255,255,0.82);
+      --panel-2: rgba(0,0,0,0.03);
+      --text: #162033;
+      --muted: #55637e;
+      --primary: #2563eb;
+      --primary-2: #7c3aed;
+      --success: #16a34a;
+      --warning: #d97706;
+      --danger: #dc2626;
+      --border: rgba(0,0,0,0.10);
+      --shadow: 0 18px 50px rgba(37,99,235,0.12);
+      --code-bg: rgba(0,0,0,0.04);
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(110,168,254,0.20), transparent 30%),
+        radial-gradient(circle at top right, rgba(139,92,246,0.18), transparent 30%),
+        linear-gradient(160deg, var(--bg), #060911 120%);
+      background-attachment: fixed;
+    }
+
+    body.light{
+      background:
+        radial-gradient(circle at top left, rgba(37,99,235,0.14), transparent 30%),
+        radial-gradient(circle at top right, rgba(124,58,237,0.10), transparent 30%),
+        linear-gradient(160deg, var(--bg), #dfe8ff 120%);
+      background-attachment: fixed;
+    }
+
+    .app {
+      display: grid;
+      grid-template-rows: auto auto 1fr auto;
+      gap: 14px;
+      min-height: 100vh;
+      padding: 18px;
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+
+    .glass {
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      background: var(--panel);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 18px 20px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .logo {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      display: grid;
+      place-items: center;
+      color: white;
+      font-weight: 800;
+      box-shadow: 0 8px 24px rgba(79,70,229,0.35);
+      flex: 0 0 auto;
+    }
+
+    .title-wrap {
+      min-width: 0;
+    }
+
+    .title {
+      margin: 0;
+      font-size: 1.2rem;
+      line-height: 1.2;
+      letter-spacing: 0.2px;
+    }
+
+    .subtitle {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 14px;
+    }
+
+    .btn, .select, .search {
+      border: 1px solid var(--border);
+      background: var(--bg-elev);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 10px 14px;
+      font: inherit;
+      transition: 0.2s ease;
+      outline: none;
+    }
+
+    .btn {
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      user-select: none;
+    }
+
+    .btn:hover, .select:hover, .search:hover {
+      transform: translateY(-1px);
+      border-color: rgba(110,168,254,0.45);
+    }
+
+    .btn.primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      color: white;
+      border: none;
+      box-shadow: 0 10px 24px rgba(79,70,229,0.28);
+    }
+
+    .btn.success {
+      background: rgba(34,197,94,0.12);
+      color: #bff5cf;
+      border-color: rgba(34,197,94,0.28);
+    }
+    body.light .btn.success { color: #0f6f32; }
+
+    .btn.warn {
+      background: rgba(245,158,11,0.12);
+      color: #ffe1a6;
+      border-color: rgba(245,158,11,0.28);
+    }
+    body.light .btn.warn { color: #9a5a00; }
+
+    .btn.danger {
+      background: rgba(239,68,68,0.10);
+      color: #ffbdbd;
+      border-color: rgba(239,68,68,0.24);
+    }
+    body.light .btn.danger { color: #9f1c1c; }
+
+    .toolbar-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      min-height: 0;
+    }
+
+    .pane {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      min-height: 60vh;
+      overflow: hidden;
+    }
+
+    .pane-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), transparent);
+    }
+
+    .pane-title {
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
+
+    .pane-tools {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    textarea.editor {
+      width: 100%;
+      height: 100%;
+      border: none;
+      resize: none;
+      padding: 18px;
+      background: transparent;
+      color: var(--text);
+      font: 500 15px/1.65 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      outline: none;
+      tab-size: 2;
+    }
+
+    .preview-wrap {
+      overflow: auto;
+      padding: 24px;
+    }
+
+    .preview {
+      max-width: 900px;
+      margin: 0 auto;
+      line-height: 1.7;
+      word-wrap: break-word;
+    }
+
+    .preview h1, .preview h2, .preview h3, .preview h4 {
+      line-height: 1.25;
+      margin-top: 1.35em;
+      margin-bottom: 0.5em;
+    }
+
+    .preview h1 { font-size: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 0.35em; }
+    .preview h2 { font-size: 1.55rem; border-bottom: 1px solid var(--border); padding-bottom: 0.3em; }
+    .preview h3 { font-size: 1.25rem; }
+    .preview p { margin: 0.85em 0; }
+    .preview ul, .preview ol { padding-left: 1.5rem; }
+    .preview li { margin: 0.3em 0; }
+    .preview blockquote {
+      margin: 1rem 0;
+      padding: 0.8rem 1rem;
+      border-left: 4px solid var(--primary);
+      background: var(--panel-2);
+      border-radius: 12px;
+      color: var(--muted);
+    }
+    .preview code {
+      background: var(--code-bg);
+      padding: 0.15rem 0.4rem;
+      border-radius: 8px;
+      font-family: ui-monospace, monospace;
+      font-size: 0.95em;
+    }
+    .preview pre {
+      background: #0a0f1c;
+      color: #d9e7ff;
+      padding: 16px;
+      border-radius: 14px;
+      overflow: auto;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    body.light .preview pre {
+      background: #182235;
+      color: #eef4ff;
+    }
+    .preview pre code {
+      background: transparent;
+      padding: 0;
+    }
+    .preview table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      overflow: hidden;
+      border-radius: 12px;
+    }
+    .preview th, .preview td {
+      border: 1px solid var(--border);
+      padding: 10px 12px;
+      text-align: left;
+    }
+    .preview th {
+      background: var(--panel-2);
+    }
+    .preview a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+    .preview a:hover { text-decoration: underline; }
+    .preview img {
+      max-width: 100%;
+      border-radius: 14px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.18);
+    }
+    .preview hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 1.5rem 0;
+    }
+
+    .statusbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .status-items {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .drop-zone {
+      position: fixed;
+      inset: 0;
+      display: none;
+      place-items: center;
+      background: rgba(5,10,20,0.55);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+    }
+
+    .drop-zone.active {
+      display: grid;
+    }
+
+    .drop-card {
+      width: min(680px, calc(100vw - 40px));
+      padding: 36px;
+      text-align: center;
+      border: 2px dashed rgba(255,255,255,0.25);
+      border-radius: 24px;
+      background: rgba(15,23,42,0.86);
+      color: white;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+    }
+
+    .toast-wrap {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 200;
+    }
+
+    .toast {
+      min-width: 240px;
+      max-width: 420px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      backdrop-filter: blur(14px);
+      box-shadow: var(--shadow);
+      color: var(--text);
+      animation: slideIn 0.2s ease;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hidden { display: none !important; }
+
+    .kbd {
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      border-radius: 8px;
+      padding: 2px 6px;
+      font-size: 0.82em;
+      color: var(--muted);
+    }
+
+    @media (max-width: 980px){
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media print {
+      body {
+        background: white !important;
+        color: black !important;
+      }
+      .topbar, .toolbar, .statusbar, .footer, .pane:first-child, .drop-zone, .toast-wrap {
+        display: none !important;
+      }
+      .workspace {
+        display: block;
+      }
+      .pane {
+        box-shadow: none !important;
+        border: none !important;
+        background: white !important;
+      }
+      .preview-wrap {
+        padding: 0;
+      }
+      .preview {
+        max-width: none;
+        color: black !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar glass">
+      <div class="brand">
+        <div class="logo">U</div>
+        <div class="title-wrap">
+          <h1 class="title">Universal Clipboard Editor</h1>
+          <div class="subtitle">Move Markdown, rich text, and plain text cleanly between apps.</div>
+        </div>
+      </div>
+      <div class="toolbar-group">
+        <button class="btn" id="themeBtn" title="Toggle theme">🌗 Theme</button>
+        <button class="btn" id="helpBtn" title="Keyboard shortcuts">⌨️ Help</button>
+      </div>
+    </header>
+
+    <section class="toolbar glass">
+      <div class="toolbar-group">
+        <button class="btn primary" id="pasteBtn">📋 Paste</button>
+        <button class="btn" id="copyMdBtn">📝 Copy Markdown</button>
+        <button class="btn" id="copyHtmlBtn">🌐 Copy HTML</button>
+        <button class="btn" id="copyTextBtn">🔤 Copy Text</button>
+        <button class="btn success" id="copyAllBtn">✅ Copy All</button>
+      </div>
+
+      <div class="toolbar-group">
+        <button class="btn" id="importBtn">📂 Import</button>
+        <input type="file" id="fileInput" class="hidden" accept=".md,.markdown,.txt,.html,.htm,.json,text/plain,text/markdown,text/html,application/json" />
+        <button class="btn" id="exportMdBtn">💾 Export .md</button>
+        <button class="btn" id="exportHtmlBtn">💾 Export .html</button>
+        <button class="btn" id="exportTextBtn">💾 Export .txt</button>
+        <button class="btn warn" id="printBtn">🖨️ Print / PDF</button>
+      </div>
+
+      <div class="toolbar-group">
+        <button class="btn" id="beautifyBtn">✨ Normalize</button>
+        <button class="btn" id="sampleBtn">🧪 Sample</button>
+        <button class="btn danger" id="clearBtn">🗑️ Clear All</button>
+      </div>
+
+      <div class="toolbar-group">
+        <label for="viewMode" style="color:var(--muted)">View</label>
+        <select class="select" id="viewMode">
+          <option value="split">Split</option>
+          <option value="editor">Editor only</option>
+          <option value="preview">Preview only</option>
+        </select>
+      </div>
+    </section>
+
+    <main class="workspace">
+      <section class="pane glass" id="editorPane">
+        <div class="pane-header">
+          <div class="pane-title">Markdown Editor</div>
+          <div class="pane-tools">
+            <button class="btn" data-wrap="**" title="Bold">B</button>
+            <button class="btn" data-wrap="*" title="Italic"><i>I</i></button>
+            <button class="btn" data-prefix="# " title="Heading">H1</button>
+            <button class="btn" data-prefix="## " title="Subheading">H2</button>
+            <button class="btn" data-prefix="- " title="Bullet list">• List</button>
+            <button class="btn" data-prefix="1. " title="Numbered list">1. List</button>
+            <button class="btn" data-blockquote title="Blockquote">❝ Quote</button>
+            <button class="btn" data-codeblock title="Code block">{ }</button>
+            <button class="btn" data-link title="Insert link">🔗</button>
+          </div>
+        </div>
+        <textarea id="editor" class="editor" spellcheck="true" placeholder="Paste Markdown, plain text, or HTML here..."></textarea>
+        <div class="statusbar">
+          <div class="status-items">
+            <span id="words">Words: 0</span>
+            <span id="chars">Characters: 0</span>
+            <span id="lines">Lines: 0</span>
+          </div>
+          <div class="status-items">
+            <span id="autosaveStatus">Autosaved</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="pane glass" id="previewPane">
+        <div class="pane-header">
+          <div class="pane-title">Rendered Preview</div>
+          <div class="pane-tools">
+            <button class="btn" id="refreshBtn">🔄 Refresh</button>
+            <button class="btn" id="openHtmlBtn">🪟 Open HTML</button>
+          </div>
+        </div>
+        <div class="preview-wrap">
+          <article id="preview" class="preview"></article>
+        </div>
+        <div class="statusbar">
+          <div class="status-items">
+            <span>Live Markdown rendering</span>
+          </div>
+          <div class="status-items">
+            <span>Drag & drop files anywhere</span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer glass">
+      <div>
+        Built for moving content between AI tools, editors, docs, email, CMSs, and chat apps.
+      </div>
+      <div>
+        Shortcuts: <span class="kbd">Ctrl/Cmd+S</span> export md,
+        <span class="kbd">Ctrl/Cmd+Shift+C</span> copy html,
+        <span class="kbd">Ctrl/Cmd+K</span> insert link
+      </div>
+    </footer>
+  </div>
+
+  <div class="drop-zone" id="dropZone">
+    <div class="drop-card">
+      <h2>Drop file to import</h2>
+      <p>Supports Markdown, TXT, HTML, and JSON exports containing text/html/markdown content.</p>
+    </div>
+  </div>
+
+  <div class="toast-wrap" id="toastWrap"></div>
+
+  <script>
+    const editor = document.getElementById('editor');
+    const preview = document.getElementById('preview');
+    const wordsEl = document.getElementById('words');
+    const charsEl = document.getElementById('chars');
+    const linesEl = document.getElementById('lines');
+    const autosaveStatus = document.getElementById('autosaveStatus');
+    const fileInput = document.getElementById('fileInput');
+    const dropZone = document.getElementById('dropZone');
+    const toastWrap = document.getElementById('toastWrap');
+    const editorPane = document.getElementById('editorPane');
+    const previewPane = document.getElementById('previewPane');
+    const viewMode = document.getElementById('viewMode');
+
+    const STORAGE_KEY = 'universal-clipboard-editor-content-v1';
+    const THEME_KEY = 'universal-clipboard-editor-theme-v1';
+    const VIEW_KEY = 'universal-clipboard-editor-view-v1';
+
+    function toast(msg, timeout = 2400) {
+      const div = document.createElement('div');
+      div.className = 'toast';
+      div.textContent = msg;
+      toastWrap.appendChild(div);
+      setTimeout(() => {
+        div.style.opacity = '0';
+        div.style.transform = 'translateY(8px)';
+        div.style.transition = '0.2s ease';
+        setTimeout(() => div.remove(), 220);
+      }, timeout);
+    }
+
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    function sanitizeHtml(html) {
+      const template = document.createElement('template');
+      template.innerHTML = html;
+
+      const blocked = ['script', 'iframe', 'object', 'embed', 'link', 'meta'];
+      blocked.forEach(tag => template.content.querySelectorAll(tag).forEach(el => el.remove()));
+
+      template.content.querySelectorAll('*').forEach(el => {
+        [...el.attributes].forEach(attr => {
+          const n = attr.name.toLowerCase();
+          const v = attr.value.toLowerCase();
+          if (n.startsWith('on')) el.removeAttribute(attr.name);
+          if ((n === 'href' || n === 'src') && v.startsWith('javascript:')) el.removeAttribute(attr.name);
+        });
+      });
+
+      return template.innerHTML;
+    }
+
+    function markdownToHtml(md) {
+      let html = md.replace(/\r\n/g, '\n');
+
+      // fenced code blocks
+      html = html.replace(/```([\w-]*)\n([\s\S]*?)```/g, (_, lang, code) => {
+        return `<pre><code class="language-${escapeHtml(lang || '')}">${escapeHtml(code.trim())}</code></pre>`;
+      });
+
+      // inline code
+      html = html.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+
+      // blockquotes
+      html = html.replace(/^(> .+(?:\n> .+)*)/gm, block => {
+        const content = block.replace(/^> ?/gm, '').replace(/\n/g, '<br>');
+        return `<blockquote>${content}</blockquote>`;
+      });
+
+      // headings
+      html = html.replace(/^#### (.*)$/gm, '<h4>$1</h4>');
+      html = html.replace(/^### (.*)$/gm, '<h3>$1</h3>');
+      html = html.replace(/^## (.*)$/gm, '<h2>$1</h2>');
+      html = html.replace(/^# (.*)$/gm, '<h1>$1</h1>');
+
+      // hr
+      html = html.replace(/^---$/gm, '<hr>');
+
+      // tables
+      html = html.replace(/((?:\|.*\|\n)+)/g, block => {
+        const rows = block.trim().split('\n').filter(Boolean);
+        if (rows.length < 2 || !/^(\|\s*[-:]+[-|\s:]*)$/.test(rows[1])) return block;
+        const parseRow = row => row.trim().replace(/^\||\|$/g, '').split('|').map(c => c.trim());
+        const headers = parseRow(rows[0]);
+        const bodyRows = rows.slice(2).map(parseRow);
+        let out = '<table><thead><tr>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr></thead><tbody>';
+        out += bodyRows.map(r => '<tr>' + r.map(c => `<td>${c}</td>`).join('') + '</tr>').join('');
+        out += '</tbody></table>';
+        return out;
+      });
+
+      // unordered lists
+      html = html.replace(/(?:^|\n)((?:[-*] .+(?:\n|$))+)/g, (_, list) => {
+        const items = list.trim().split('\n').map(i => i.replace(/^[-*] /, '').trim());
+        return '\n<ul>' + items.map(i => `<li>${i}</li>`).join('') + '</ul>\n';
+      });
+
+      // ordered lists
+      html = html.replace(/(?:^|\n)((?:\d+\. .+(?:\n|$))+)/g, (_, list) => {
+        const items = list.trim().split('\n').map(i => i.replace(/^\d+\. /, '').trim());
+        return '\n<ol>' + items.map(i => `<li>${i}</li>`).join('') + '</ol>\n';
+      });
+
+      // bold / italic
+      html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+      // links
+      html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+
+      // images
+      html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img alt="$1" src="$2">');
+
+      // paragraphs
+      const chunks = html.split(/\n{2,}/).map(chunk => chunk.trim()).filter(Boolean);
+      html = chunks.map(chunk => {
+        if (/^<(h\d|ul|ol|li|blockquote|pre|table|thead|tbody|tr|th|td|img|hr)/.test(chunk)) return chunk;
+        return `<p>${chunk.replace(/\n/g, '<br>')}</p>`;
+      }).join('\n');
+
+      return sanitizeHtml(html);
+    }
+
+    function htmlToMarkdown(html) {
+      const temp = document.createElement('div');
+      temp.innerHTML = sanitizeHtml(html);
+
+      function walk(node) {
+        if (node.nodeType === Node.TEXT_NODE) return node.textContent;
+        if (node.nodeType !== Node.ELEMENT_NODE) return '';
+
+        const tag = node.tagName.toLowerCase();
+        const content = [...node.childNodes].map(walk).join('');
+
+        switch(tag) {
+          case 'h1': return `# ${content}\n\n`;
+          case 'h2': return `## ${content}\n\n`;
+          case 'h3': return `### ${content}\n\n`;
+          case 'h4': return `#### ${content}\n\n`;
+          case 'p': return `${content}\n\n`;
+          case 'br': return `\n`;
+          case 'strong':
+          case 'b': return `**${content}**`;
+          case 'em':
+          case 'i': return `*${content}*`;
+          case 'code':
+            if (node.parentElement && node.parentElement.tagName.toLowerCase() === 'pre') {
+              return content;
+            }
+            return `\`${content}\``;
+          case 'pre': return `\`\`\`\n${node.textContent}\n\`\`\`\n\n`;
+          case 'blockquote':
+            return node.textContent.split('\n').map(l => l.trim() ? `> ${l}` : '>').join('\n') + '\n\n';
+          case 'a': return `[${content}](${node.getAttribute('href') || '#'})`;
+          case 'img': return `![${node.getAttribute('alt') || ''}](${node.getAttribute('src') || ''})\n\n`;
+          case 'ul':
+            return [...node.children].map(li => `- ${walk(li).trim()}`).join('\n') + '\n\n';
+          case 'ol':
+            return [...node.children].map((li, i) => `${i+1}. ${walk(li).trim()}`).join('\n') + '\n\n';
+          case 'li': return content;
+          case 'hr': return `---\n\n`;
+          case 'table': {
+            const rows = [...node.querySelectorAll('tr')].map(tr =>
+              [...tr.children].map(c => c.textContent.trim())
+            );
+            if (!rows.length) return '';
+            let out = `| ${rows[0].join(' | ')} |\n`;
+            out += `| ${rows[0].map(() => '---').join(' | ')} |\n`;
+            rows.slice(1).forEach(r => out += `| ${r.join(' | ')} |\n`);
+            return out + '\n';
+          }
+          default:
+            return content;
+        }
+      }
+
+      return walk(temp).replace(/\n{3,}/g, '\n\n').trim();
+    }
+
+    function updateCounts() {
+      const text = editor.value;
+      const words = (text.trim().match(/\S+/g) || []).length;
+      const chars = text.length;
+      const lines = text.length ? text.split('\n').length : 0;
+      wordsEl.textContent = `Words: ${words}`;
+      charsEl.textContent = `Characters: ${chars}`;
+      linesEl.textContent = `Lines: ${lines}`;
+    }
+
+    function renderPreview() {
+      preview.innerHTML = markdownToHtml(editor.value);
+    }
+
+    function saveLocal() {
+      localStorage.setItem(STORAGE_KEY, editor.value);
+      autosaveStatus.textContent = 'Autosaved';
+    }
+
+    let autosaveTimer;
+    function scheduleSave() {
+      autosaveStatus.textContent = 'Saving...';
+      clearTimeout(autosaveTimer);
+      autosaveTimer = setTimeout(saveLocal, 300);
+    }
+
+    function updateAll() {
+      updateCounts();
+      renderPreview();
+      scheduleSave();
+    }
+
+    function setTheme(theme) {
+      document.body.classList.toggle('light', theme === 'light');
+      localStorage.setItem(THEME_KEY, theme);
+    }
+
+    function toggleTheme() {
+      setTheme(document.body.classList.contains('light') ? 'dark' : 'light');
+    }
+
+    function setView(mode) {
+      if (mode === 'editor') {
+        editorPane.classList.remove('hidden');
+        previewPane.classList.add('hidden');
+      } else if (mode === 'preview') {
+        editorPane.classList.add('hidden');
+        previewPane.classList.remove('hidden');
+      } else {
+        editorPane.classList.remove('hidden');
+        previewPane.classList.remove('hidden');
+      }
+      localStorage.setItem(VIEW_KEY, mode);
+      viewMode.value = mode;
+    }
+
+    async function copyToClipboard(text, html = null) {
+      try {
+        if (html && navigator.clipboard && window.ClipboardItem) {
+          const item = new ClipboardItem({
+            'text/plain': new Blob([text], { type: 'text/plain' }),
+            'text/html': new Blob([html], { type: 'text/html' })
+          });
+          await navigator.clipboard.write([item]);
+        } else {
+          await navigator.clipboard.writeText(text);
+        }
+        return true;
+      } catch {
+        try {
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          ta.remove();
+          return true;
+        } catch {
+          return false;
+        }
+      }
+    }
+
+    async function pasteFromClipboard() {
+      try {
+        if (navigator.clipboard && navigator.clipboard.read) {
+          const items = await navigator.clipboard.read();
+          for (const item of items) {
+            if (item.types.includes('text/markdown')) {
+              const blob = await item.getType('text/markdown');
+              editor.value = await blob.text();
+              updateAll();
+              toast('Pasted Markdown from clipboard');
+              return;
+            }
+            if (item.types.includes('text/html')) {
+              const blob = await item.getType('text/html');
+              const html = await blob.text();
+              editor.value = htmlToMarkdown(html);
+              updateAll();
+              toast('Pasted HTML and converted to Markdown');
+              return;
+            }
+            if (item.types.includes('text/plain')) {
+              const blob = await item.getType('text/plain');
+              editor.value = await blob.text();
+              updateAll();
+              toast('Pasted plain text from clipboard');
+              return;
+            }
+          }
+        }
+        const text = await navigator.clipboard.readText();
+        editor.value = text;
+        updateAll();
+        toast('Pasted text from clipboard');
+      } catch {
+        toast('Clipboard paste blocked. Use Ctrl/Cmd+V in the editor.');
+        editor.focus();
+      }
+    }
+
+    function download(filename, content, type) {
+      const blob = new Blob([content], { type });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    function getTimestampName(prefix, ext) {
+      const d = new Date();
+      const pad = n => String(n).padStart(2, '0');
+      const stamp = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}_${pad(d.getHours())}-${pad(d.getMinutes())}-${pad(d.getSeconds())}`;
+      return `${prefix}_${stamp}.${ext}`;
+    }
+
+    function normalizeText(text) {
+      return text
+        .replace(/\r\n/g, '\n')
+        .replace(/\t/g, '  ')
+        .replace(/\u00A0/g, ' ')
+        .replace(/[ \t]+\n/g, '\n')
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
+    }
+
+    function insertAtSelection(before, after = before) {
+      const start = editor.selectionStart;
+      const end = editor.selectionEnd;
+      const text = editor.value;
+      const selected = text.slice(start, end);
+      editor.value = text.slice(0, start) + before + selected + after + text.slice(end);
+      editor.focus();
+      editor.selectionStart = start + before.length;
+      editor.selectionEnd = end + before.length;
+      updateAll();
+    }
+
+    function prefixSelectedLines(prefix) {
+      const start = editor.selectionStart;
+      const end = editor.selectionEnd;
+      const text = editor.value;
+      const lineStart = text.lastIndexOf('\n', start - 1) + 1;
+      const lineEndIdx = text.indexOf('\n', end);
+      const lineEnd = lineEndIdx === -1 ? text.length : lineEndIdx;
+      const block = text.slice(lineStart, lineEnd);
+      const updated = block.split('\n').map(line => prefix + line).join('\n');
+      editor.value = text.slice(0, lineStart) + updated + text.slice(lineEnd);
+      editor.focus();
+      editor.selectionStart = lineStart;
+      editor.selectionEnd = lineStart + updated.length;
+      updateAll();
+    }
+
+    function insertLink() {
+      const url = prompt('Enter URL:', 'https://');
+      if (!url) return;
+      const start = editor.selectionStart;
+      const end = editor.selectionEnd;
+      const selected = editor.value.slice(start, end) || 'link text';
+      const md = `[${selected}](${url})`;
+      editor.setRangeText(md, start, end, 'end');
+      updateAll();
+    }
+
+    function loadSample() {
+      editor.value = `# Universal Clipboard Editor
+
+Move content between apps without losing formatting.
+
+## Features
+
+- Paste Markdown, HTML, or plain text
+- Convert HTML to Markdown
+- Live preview
+- Copy as Markdown
+- Copy as rich HTML
+- Export to \`.md\`, \`.html\`, or \`.txt\`
+
+> This is especially useful when AI tools output Markdown that another application does not preserve correctly.
+
+### Example table
+
+| Format | Supported | Notes |
+| --- | --- | --- |
+| Markdown | Yes | Primary editing mode |
+| HTML | Yes | Import, paste, export |
+| Plain text | Yes | Clean fallback |
+
+### Example code
+
+\`\`\`js
+function hello() {
+  console.log("Clipboard bridge ready");
+}
+\`\`\`
+`;
+      updateAll();
+      toast('Sample loaded');
+    }
+
+    async function handleFile(file) {
+      const name = file.name.toLowerCase();
+      const text = await file.text();
+
+      if (name.endsWith('.html') || name.endsWith('.htm')) {
+        editor.value = htmlToMarkdown(text);
+        toast('Imported HTML and converted to Markdown');
+      } else if (name.endsWith('.json')) {
+        try {
+          const data = JSON.parse(text);
+          editor.value =
+            data.markdown ||
+            data.text ||
+            data.content ||
+            data.html && htmlToMarkdown(data.html) ||
+            JSON.stringify(data, null, 2);
+          toast('Imported JSON content');
+        } catch {
+          editor.value = text;
+          toast('Imported JSON as text');
+        }
+      } else {
+        editor.value = text;
+        toast('Imported file');
+      }
+      updateAll();
+    }
+
+    document.getElementById('themeBtn').addEventListener('click', toggleTheme);
+    document.getElementById('helpBtn').addEventListener('click', () => {
+      alert(
+`Keyboard shortcuts
+
+Ctrl/Cmd + S         Export Markdown
+Ctrl/Cmd + Shift + C Copy HTML
+Ctrl/Cmd + Shift + M Copy Markdown
+Ctrl/Cmd + K         Insert link
+Tab                  Inserts two spaces in editor
+
+Tip:
+You can also drag and drop .md, .txt, .html, or .json files anywhere onto the page.`
+      );
+    });
+
+    document.getElementById('pasteBtn').addEventListener('click', pasteFromClipboard);
+
+    document.getElementById('copyMdBtn').addEventListener('click', async () => {
+      const ok = await copyToClipboard(editor.value);
+      toast(ok ? 'Markdown copied' : 'Copy failed');
+    });
+
+    document.getElementById('copyHtmlBtn').addEventListener('click', async () => {
+      const html = markdownToHtml(editor.value);
+      const ok = await copyToClipboard(editor.value, html);
+      toast(ok ? 'HTML copied with plain text fallback' : 'Copy failed');
+    });
+
+    document.getElementById('copyTextBtn').addEventListener('click', async () => {
+      const text = preview.innerText;
+      const ok = await copyToClipboard(text);
+      toast(ok ? 'Plain text copied' : 'Copy failed');
+    });
+
+    document.getElementById('copyAllBtn').addEventListener('click', async () => {
+      const html = markdownToHtml(editor.value);
+      const plain = preview.innerText;
+      const ok = await copyToClipboard(plain || editor.value, html);
+      toast(ok ? 'Copied rendered content and fallback text' : 'Copy failed');
+    });
+
+    document.getElementById('importBtn').addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (file) await handleFile(file);
+      fileInput.value = '';
+    });
+
+    document.getElementById('exportMdBtn').addEventListener('click', () => {
+      download(getTimestampName('clipboard', 'md'), editor.value, 'text/markdown');
+      toast('Exported Markdown');
+    });
+
+    document.getElementById('exportHtmlBtn').addEventListener('click', () => {
+      const html = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Export</title>
+<style>
+body{font-family:Inter,Arial,sans-serif;max-width:900px;margin:40px auto;padding:0 20px;line-height:1.7;color:#162033}
+pre{background:#182235;color:#eef4ff;padding:16px;border-radius:12px;overflow:auto}
+code{background:#f1f5f9;padding:2px 6px;border-radius:6px}
+blockquote{border-left:4px solid #2563eb;padding:8px 14px;background:#f8fbff;color:#475569}
+table{width:100%;border-collapse:collapse} th,td{border:1px solid #dbe4f0;padding:10px}
+img{max-width:100%;border-radius:12px}
+</style></head><body>${markdownToHtml(editor.value)}</body></html>`;
+      download(getTimestampName('clipboard', 'html'), html, 'text/html');
+      toast('Exported HTML');
+    });
+
+    document.getElementById('exportTextBtn').addEventListener('click', () => {
+      download(getTimestampName('clipboard', 'txt'), preview.innerText, 'text/plain');
+      toast('Exported plain text');
+    });
+
+    document.getElementById('printBtn').addEventListener('click', () => window.print());
+
+    document.getElementById('beautifyBtn').addEventListener('click', () => {
+      editor.value = normalizeText(editor.value);
+      updateAll();
+      toast('Text normalized');
+    });
+
+    document.getElementById('sampleBtn').addEventListener('click', loadSample);
+
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      if (!confirm('Clear all content?')) return;
+      editor.value = '';
+      updateAll();
+      toast('Cleared');
+    });
+
+    document.getElementById('refreshBtn').addEventListener('click', () => {
+      renderPreview();
+      toast('Preview refreshed');
+    });
+
+    document.getElementById('openHtmlBtn').addEventListener('click', () => {
+      const html = markdownToHtml(editor.value);
+      const w = window.open('', '_blank');
+      if (!w) return toast('Popup blocked');
+      w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Rendered HTML</title></head><body>${html}</body></html>`);
+      w.document.close();
+      toast('Opened rendered HTML in new window');
+    });
+
+    viewMode.addEventListener('change', e => setView(e.target.value));
+
+    document.querySelectorAll('[data-wrap]').forEach(btn => {
+      btn.addEventListener('click', () => insertAtSelection(btn.dataset.wrap, btn.dataset.wrap));
+    });
+
+    document.querySelectorAll('[data-prefix]').forEach(btn => {
+      btn.addEventListener('click', () => prefixSelectedLines(btn.dataset.prefix));
+    });
+
+    document.querySelector('[data-blockquote]').addEventListener('click', () => prefixSelectedLines('> '));
+    document.querySelector('[data-codeblock]').addEventListener('click', () => insertAtSelection('```\n', '\n```'));
+    document.querySelector('[data-link]').addEventListener('click', insertLink);
+
+    editor.addEventListener('input', updateAll);
+
+    editor.addEventListener('keydown', (e) => {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        const start = editor.selectionStart;
+        editor.setRangeText('  ', start, editor.selectionEnd, 'end');
+        updateAll();
+      }
+
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        download(getTimestampName('clipboard', 'md'), editor.value, 'text/markdown');
+        toast('Exported Markdown');
+      }
+
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'c') {
+        e.preventDefault();
+        const html = markdownToHtml(editor.value);
+        copyToClipboard(editor.value, html).then(ok => toast(ok ? 'HTML copied' : 'Copy failed'));
+      }
+
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'm') {
+        e.preventDefault();
+        copyToClipboard(editor.value).then(ok => toast(ok ? 'Markdown copied' : 'Copy failed'));
+      }
+
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        insertLink();
+      }
+    });
+
+    ['dragenter', 'dragover'].forEach(evt => {
+      window.addEventListener(evt, e => {
+        e.preventDefault();
+        dropZone.classList.add('active');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach(evt => {
+      window.addEventListener(evt, e => {
+        e.preventDefault();
+        if (evt === 'dragleave' && e.relatedTarget) return;
+        dropZone.classList.remove('active');
+      });
+    });
+
+    window.addEventListener('drop', async e => {
+      const file = e.dataTransfer.files && e.dataTransfer.files[0];
+      if (file) await handleFile(file);
+    });
+
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) editor.value = saved;
+    const theme = localStorage.getItem(THEME_KEY) || 'dark';
+    setTheme(theme);
+    const savedView = localStorage.getItem(VIEW_KEY) || 'split';
+    setView(savedView);
+    updateCounts();
+    renderPreview();
+    autosaveStatus.textContent = 'Autosaved';
+  </script>
+</body>
+</html>

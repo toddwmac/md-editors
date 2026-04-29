@@ -360,8 +360,8 @@
 
                 <div class="editor-section">
                     <div class="editor-header">
-                        <div class="editor-title">Preview</div>
-                        <div class="format-indicator">HTML Preview</div>
+                        <div class="editor-title">HTML Source</div>
+                        <div class="format-indicator">Raw HTML</div>
                     </div>
                     <div id="preview" class="preview">
                         <div id="previewContent" class="preview-content">
@@ -468,20 +468,26 @@
             }
 
             function updatePreview() {
-                previewContent.innerHTML = editor.innerHTML;
+                const formatted = editor.innerHTML
+                    .replace(/></g, '>\n<')
+                    .replace(/\n\n+/g, '\n');
+                previewContent.innerHTML = '<pre style="white-space:pre-wrap;word-break:break-all;color:#e0e0ff;font-family:monospace;font-size:0.9em;line-height:1.5">' +
+                    formatted.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</pre>';
             }
 
             function insertHeading(level) {
                 const selection = window.getSelection();
                 if (selection.rangeCount > 0) {
                     const range = selection.getRangeAt(0);
-                    const heading = document.createElement(`h${level}`);
-                    heading.textContent = 'Heading Text';
+                    const selectedText = range.toString() || 'Heading Text';
+                    const heading = document.createElement('h' + level);
+                    heading.textContent = selectedText;
                     range.deleteContents();
                     range.insertNode(heading);
+                    // Move cursor after heading
                     const newRange = document.createRange();
-                    newRange.selectNodeContents(heading);
-                    newRange.collapse(false);
+                    newRange.setStartAfter(heading);
+                    newRange.collapse(true);
                     selection.removeAllRanges();
                     selection.addRange(newRange);
                 }
@@ -491,15 +497,16 @@
                 const selection = window.getSelection();
                 if (selection.rangeCount > 0) {
                     const range = selection.getRangeAt(0);
+                    const selectedText = range.toString() || 'Quote text';
                     const quote = document.createElement('blockquote');
                     const p = document.createElement('p');
-                    p.textContent = 'Quote text';
+                    p.textContent = selectedText;
                     quote.appendChild(p);
                     range.deleteContents();
                     range.insertNode(quote);
                     const newRange = document.createRange();
-                    newRange.selectNodeContents(p);
-                    newRange.collapse(false);
+                    newRange.setStartAfter(quote);
+                    newRange.collapse(true);
                     selection.removeAllRanges();
                     selection.addRange(newRange);
                 }
@@ -516,32 +523,55 @@
                 const selection = window.getSelection();
                 if (selection.rangeCount > 0) {
                     const range = selection.getRangeAt(0);
+                    const selectedText = range.toString() || 'code';
                     const code = document.createElement('code');
-                    code.textContent = 'code';
+                    code.textContent = selectedText;
                     range.deleteContents();
                     range.insertNode(code);
                     const newRange = document.createRange();
-                    newRange.selectNodeContents(code);
-                    newRange.collapse(false);
+                    newRange.setStartAfter(code);
+                    newRange.collapse(true);
                     selection.removeAllRanges();
                     selection.addRange(newRange);
                 }
             }
 
-            function copyToClipboard() {
-                const content = editor.innerHTML;
+            async function copyToClipboard() {
+                try {
+                    const htmlContent = editor.innerHTML;
+                    const textContent = editor.innerText;
 
-                const textarea = document.createElement('textarea');
-                textarea.value = content;
-                document.body.appendChild(textarea);
-                textarea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textarea);
+                    if (navigator.clipboard && window.ClipboardItem) {
+                        const clipboardItem = new ClipboardItem({
+                            'text/html': new Blob([htmlContent], { type: 'text/html' }),
+                            'text/plain': new Blob([textContent], { type: 'text/plain' })
+                        });
+                        await navigator.clipboard.write([clipboardItem]);
+                    } else {
+                        // Fallback: select the editor content and use execCommand
+                        const range = document.createRange();
+                        range.selectNodeContents(editor);
+                        const selection = window.getSelection();
+                        selection.removeAllRanges();
+                        selection.addRange(range);
+                        document.execCommand('copy');
+                        selection.removeAllRanges();
+                    }
 
-                notification.classList.add('show');
-                setTimeout(() => {
-                    notification.classList.remove('show');
-                }, 2000);
+                    notification.classList.add('show');
+                    setTimeout(() => {
+                        notification.classList.remove('show');
+                    }, 2000);
+                } catch (err) {
+                    console.error('Copy failed:', err);
+                    // Fallback to basic copy
+                    const textContent = editor.innerText;
+                    navigator.clipboard.writeText(textContent).catch(() => {});
+                    notification.classList.add('show');
+                    setTimeout(() => {
+                        notification.classList.remove('show');
+                    }, 2000);
+                }
             }
 
             function clearEditor() {
@@ -559,11 +589,22 @@
 
                 input.onchange = e => {
                     const file = e.target.files[0];
+                    if (!file) return;
                     const reader = new FileReader();
 
                     reader.onload = function(event) {
                         const content = event.target.result;
-                        editor.innerHTML = content;
+                        const name = file.name.toLowerCase();
+
+                        if (name.endsWith('.html') || name.endsWith('.htm')) {
+                            // Extract body content from HTML files
+                            const parser = new DOMParser();
+                            const doc = parser.parseFromString(content, 'text/html');
+                            editor.innerHTML = doc.body.innerHTML;
+                        } else {
+                            // For .txt and .md, convert line breaks to HTML
+                            editor.innerText = content;
+                        }
                         updatePreview();
                         updateStats();
                     };
